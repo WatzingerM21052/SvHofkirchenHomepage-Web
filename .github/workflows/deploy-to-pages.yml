@@ -23,15 +23,13 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: 8.0.x  # Oder 9.0.x, je nach deiner Version
+          dotnet-version: 8.0.x
 
       - name: Publish .NET Project
         run: dotnet publish SvHofkirchenHomepage/SvHofkirchenHomepage.csproj -c Release -o release --nologo
 
-      # WICHTIG: base-href Anpassung für GitHub Pages Unterverzeichnisse
       - name: Change base-tag in index.html
-        run: sed -i 's/<base href="\/" \/>/<base href="\/svhofkirchenhomepage\/" \/>/g' release/wwwroot/index.html
-        # HINWEIS: Ersetze 'svhofkirchenhomepage' durch den exakten Namen deines Repos!
+        run: sed -i 's/<base href="\/" \/>/<base href="\/SvHofkirchenHomepage-Web\/" \/>/g' release/wwwroot/index.html
 
       - name: Fix _framework folder (Jekyll bypass)
         run: touch release/wwwroot/.nojekyll
