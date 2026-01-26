@@ -15,11 +15,11 @@
 
 <body>
     <div id="app">
-        <svg class="loading-progress">
-            <circle r="40%" cx="50%" cy="50%" />
-            <circle r="40%" cx="50%" cy="50%" />
-        </svg>
-        <div class="loading-progress-text">Lade Vereinsdaten...</div>
+        <div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #f8f9fa; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9999;">
+            <div class="spinner-border" role="status" style="width: 3rem; height: 3rem; color: #052767;"></div>
+            <h4 class="mt-4" style="color: #052767; font-weight: 600; font-family: 'Segoe UI', sans-serif;">Lade Vereinsdaten...</h4>
+            <p class="text-muted small">Bitte warten</p>
+        </div>
     </div>
 
     <div id="blazor-error-ui">
@@ -29,39 +29,16 @@
     </div>
     
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+
     <script>
-        // Charts initialisieren
         window.setupChart = (id, config) => {
             const ctx = document.getElementById(id).getContext('2d');
             if (window[id + 'Chart']) { window[id + 'Chart'].destroy(); }
             window[id + 'Chart'] = new Chart(ctx, config);
         }
 
-        // NEU: PDF Generierung
-        window.generatePdf = (title, headers, data) => {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-            
-            // Header
-            doc.setFontSize(18);
-            doc.text(title, 14, 22);
-            doc.setFontSize(11);
-            doc.text(`Erstellt am: ${new Date().toLocaleDateString()}`, 14, 30);
-
-            // Tabelle
-            doc.autoTable({
-                startY: 40,
-                head: [headers],
-                body: data,
-                theme: 'grid',
-                headStyles: { fillColor: [5, 39, 103] }, // Vereinsblau
-            });
-
-            doc.save('Trainingsstatistik.pdf');
-        }
-
-        // Datei Download
         window.downloadFileFromStream = async (fileName, contentBase64) => {
             const link = document.createElement('a');
             link.download = fileName;
@@ -70,11 +47,27 @@
             link.click();
             document.body.removeChild(link);
         }
+
+        window.generatePdf = (title, headers, data) => {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            doc.setFontSize(18);
+            doc.setTextColor(5, 39, 103);
+            doc.text(title, 14, 22);
+            doc.setFontSize(11);
+            doc.setTextColor(100);
+            doc.text(`Erstellt am: ${new Date().toLocaleDateString()}`, 14, 30);
+            doc.autoTable({
+                startY: 40,
+                head: [headers],
+                body: data,
+                theme: 'grid',
+                headStyles: { fillColor: [5, 39, 103] },
+            });
+            doc.save('Statistik.pdf');
+        }
     </script>
     
     <script src="_framework/blazor.webassembly.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 </body>
-
 </html>

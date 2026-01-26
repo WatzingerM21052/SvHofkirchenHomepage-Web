@@ -3,15 +3,16 @@
 @using SvHofkirchenWasm.Models
 
 <div class="container-fluid p-4">
-    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-5 gap-3">
+    <div class="glass-card p-4 mb-4 d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
         <div>
-            <h2 class="fw-bold text-primary mb-1">Anwesenheit erfassen</h2>
-            <p class="text-muted small mb-0">Wer ist heute im Training?</p>
+            <h2 class="fw-bold text-primary mb-1">Anwesenheit</h2>
+            <p class="text-muted small mb-0">Trainingseinheit erfassen und verwalten</p>
         </div>
         
-        <div class="d-flex align-items-center bg-white p-2 rounded-4 shadow-sm border">
-            <span class="text-muted text-uppercase fw-bold small px-3">Datum:</span>
-            <input type="date" class="date-picker-fancy" 
+        <div class="d-flex align-items-center gap-3 bg-light rounded-pill px-4 py-2 border">
+            <i class="bi bi-calendar3 text-primary"></i>
+            <input type="date" class="border-0 bg-transparent fw-bold text-dark" 
+                   style="outline: none;"
                    value="@CurrentDate.ToString("yyyy-MM-dd")" 
                    @onchange="OnDateChanged" />
         </div>
@@ -23,35 +24,44 @@
     }
     else
     {
+        var presentCount = Service.Presences.Count(p => p.ParsedDate.Date == CurrentDate.Date);
+        var totalCount = Math.Max(1, Service.YouthMembers.Count);
+        var quote = Math.Round((double)presentCount / totalCount * 100);
+
         <div class="row g-3 mb-4">
-            <div class="col-12">
-                <div class="glass-card p-3 d-flex align-items-center justify-content-between bg-primary text-white" 
-                     style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);">
-                    <div class="d-flex align-items-center gap-3">
-                        <div class="bg-white bg-opacity-25 p-2 rounded-circle">
-                            <i class="bi bi-check-lg fs-4"></i>
-                        </div>
-                        <div>
-                            <span class="d-block small text-white-50 fw-bold text-uppercase">Aktuell Anwesend</span>
-                            <span class="fs-3 fw-bold">@Service.Presences.Count(p => p.ParsedDate.Date == CurrentDate.Date)</span>
+            <div class="col-12 col-md-6 col-lg-4">
+                <div class="glass-card p-3 d-flex align-items-center bg-primary text-white position-relative overflow-hidden">
+                    <div class="flex-grow-1 position-relative" style="z-index:2;">
+                        <span class="text-white-50 text-uppercase small fw-bold">Anwesend Heute</span>
+                        <div class="d-flex align-items-baseline gap-2">
+                            <span class="display-5 fw-bold">@presentCount</span>
+                            <span class="opacity-75">/ @totalCount</span>
                         </div>
                     </div>
-                    <div class="text-end">
-                         <span class="d-block small text-white-50">von @Service.YouthMembers.Count</span>
-                         <span class="badge bg-warning text-dark mt-1">
-                             @Math.Round((double)Service.Presences.Count(p => p.ParsedDate.Date == CurrentDate.Date) / Math.Max(1, Service.YouthMembers.Count) * 100)% Quote
-                         </span>
+                    <i class="bi bi-check-circle-fill position-absolute" style="font-size: 5rem; right: -1rem; bottom: -1rem; opacity: 0.1;"></i>
+                </div>
+            </div>
+             <div class="col-12 col-md-6 col-lg-4">
+                <div class="glass-card p-3 d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <span class="text-muted text-uppercase small fw-bold">Trainingsquote</span>
+                        <div class="d-flex align-items-center gap-3 mt-1">
+                            <h2 class="mb-0 fw-bold @(quote > 50 ? "text-success" : "text-warning")">@quote%</h2>
+                            <div class="progress flex-grow-1" style="height: 8px;">
+                                <div class="progress-bar @(quote > 50 ? "bg-success" : "bg-warning")" role="progressbar" style="width: @quote%"></div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="glass-card overflow-hidden">
+        <div class="glass-card">
             <div class="table-responsive">
                 <table class="table table-hover align-middle mb-0">
-                    <thead class="bg-light text-muted">
+                    <thead class="bg-light">
                         <tr>
-                            <th class="ps-4" style="width: 60px;"></th>
+                            <th class="ps-4" style="width: 60px;">Status</th>
                             <th>Name</th>
                             <th class="d-none d-md-table-cell">Jahrgang</th>
                             <th>Kategorie</th>
@@ -64,20 +74,17 @@
                             var isPresent = Service.IsPresent(member.MemberId, CurrentDate);
                             
                             <tr @onclick="() => Toggle(member.MemberId)" 
-                                class="@(isPresent ? "bg-success bg-opacity-10" : "")" 
-                                style="cursor: pointer; transition: background 0.1s;">
+                                class="@(isPresent ? "table-active-custom" : "")" 
+                                style="cursor: pointer; border-left: 4px solid @(isPresent ? "var(--success)" : "transparent");">
                                 
                                 <td class="ps-4">
                                     <div class="form-check">
-                                        <input class="form-check-input fs-5" type="checkbox" checked="@isPresent" style="pointer-events: none; border-color: #adb5bd;">
+                                        <input class="form-check-input fs-5" type="checkbox" checked="@isPresent" style="pointer-events: none;">
                                     </div>
                                 </td>
                                 
                                 <td>
-                                    <span class="fw-bold @(isPresent ? "text-success" : "text-dark")">
-                                        @member.LastName
-                                    </span> 
-                                    @member.FirstName
+                                    <span class="fw-bold text-dark">@member.LastName</span> @member.FirstName
                                 </td>
                                 
                                 <td class="d-none d-md-table-cell text-muted font-monospace">
@@ -85,7 +92,7 @@
                                 </td>
                                 
                                 <td>
-                                    <span class="badge rounded-pill @member.CategoryColor shadow-sm border border-white">
+                                    <span class="badge rounded-pill @member.CategoryColor shadow-sm">
                                         @member.AgeCategory
                                     </span>
                                 </td>
@@ -102,12 +109,22 @@
     }
 </div>
 
+<style>
+    .table-active-custom {
+        background-color: rgba(25, 135, 84, 0.08) !important;
+    }
+    .form-check-input:checked {
+        background-color: #198754;
+        border-color: #198754;
+    }
+</style>
+
 @code {
     private DateTime CurrentDate = DateTime.Today;
 
     protected override async Task OnInitializedAsync()
     {
-        Service.OnChange += StateHasChanged; // Sicherstellen, dass wir Updates bekommen
+        Service.OnChange += StateHasChanged;
         await Service.InitializeAsync();
     }
     

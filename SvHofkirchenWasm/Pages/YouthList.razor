@@ -1,7 +1,6 @@
 @page "/youth-list"
 @using SvHofkirchenWasm.Models
 @inject YouthService Service
-@inject IJSRuntime JS
 
 <div class="container-fluid p-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
@@ -9,7 +8,7 @@
             <h2 class="fw-bold text-primary mb-0">Spielerverwaltung</h2>
         </div>
         <button class="btn btn-primary rounded-pill px-4 shadow-sm" @onclick="() => OpenEditor(null)">
-            <i class="bi bi-plus-lg me-2"></i> Neuer Spieler
+            <i class="bi bi-person-plus-fill me-2"></i> Neu
         </button>
     </div>
 
@@ -24,16 +23,16 @@
                 <div class="col-md-6">
                     <div class="input-group">
                         <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-search"></i></span>
-                        <input type="text" class="form-control border-start-0 ps-0 shadow-none" placeholder="Suche..." 
+                        <input type="text" class="form-control border-start-0 ps-0 shadow-none" placeholder="Spieler suchen..." 
                                @bind="SearchTerm" @bind:event="oninput" />
                     </div>
                 </div>
                 <div class="col-md-4 ms-auto">
                      <select class="form-select shadow-none text-muted" @bind="SortOption">
-                        <option value="name_asc">Sortierung: Name (A-Z)</option>
-                        <option value="name_desc">Sortierung: Name (Z-A)</option>
-                        <option value="age_asc">Sortierung: Jüngste zuerst</option>
-                        <option value="age_desc">Sortierung: Älteste zuerst</option>
+                        <option value="name_asc">Name (A-Z)</option>
+                        <option value="name_desc">Name (Z-A)</option>
+                        <option value="age_asc">Jüngste zuerst</option>
+                        <option value="age_desc">Älteste zuerst</option>
                     </select>
                 </div>
             </div>
@@ -42,12 +41,12 @@
         <div class="glass-card overflow-hidden">
             <div class="table-responsive">
                 <table class="table table-hover align-middle mb-0">
-                    <thead class="bg-light text-muted">
+                    <thead class="bg-light">
                         <tr>
                             <th class="ps-4">Name</th>
                             <th>Geburtsdatum</th>
                             <th>Kategorie</th>
-                            <th class="text-end pe-4">Optionen</th>
+                            <th class="text-end pe-4">Aktionen</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -57,15 +56,13 @@
                                 <td class="ps-4">
                                     <div class="fw-bold text-dark">@member.LastName @member.FirstName</div>
                                 </td>
-                                <td class="text-muted">
-                                    @(member.BirthDate?.ToString("dd.MM.yyyy") ?? "-")
-                                </td>
+                                <td class="text-muted">@(member.BirthDate?.ToString("dd.MM.yyyy") ?? "-")</td>
                                 <td><span class="badge rounded-pill @member.CategoryColor">@member.AgeCategory</span></td>
                                 <td class="text-end pe-4">
-                                    <button class="btn btn-sm btn-light border me-2" title="Bearbeiten" @onclick="() => OpenEditor(member)">
+                                    <button class="btn btn-sm btn-light border me-2" @onclick="() => OpenEditor(member)">
                                         <i class="bi bi-pencil-fill text-muted"></i>
                                     </button>
-                                    <button class="btn btn-sm btn-danger-soft" title="Löschen" @onclick="() => ConfirmDelete(member)">
+                                    <button class="btn btn-sm btn-danger-soft" @onclick="() => RequestDelete(member)">
                                         <i class="bi bi-trash-fill"></i>
                                     </button>
                                 </td>
@@ -75,7 +72,7 @@
                 </table>
             </div>
              @if(!GetFilteredMembers().Any()) {
-                <div class="text-center py-5 text-muted opacity-50">Keine Einträge gefunden.</div>
+                <div class="text-center py-5 text-muted opacity-50">Keine Spieler gefunden.</div>
             }
         </div>
     }
@@ -83,36 +80,57 @@
 
 @if (ShowEditor)
 {
-    <div class="modal-backdrop fade show" style="background-color: rgba(0,0,0,0.5);"></div>
+    <div class="modal-backdrop fade show"></div>
     <div class="modal fade show d-block" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content border-0 shadow-lg rounded-4">
-                <div class="modal-header border-bottom-0 pb-0">
+            <div class="modal-content">
+                <div class="modal-header border-bottom-0">
                     <h5 class="modal-title fw-bold text-primary">
-                        @(EditModel.MemberId == 0 ? "Neuen Spieler anlegen" : "Spieler bearbeiten")
+                        @(EditModel.MemberId == 0 ? "Neuer Spieler" : "Bearbeiten")
                     </h5>
                     <button type="button" class="btn-close" @onclick="CloseEditor"></button>
                 </div>
-                <div class="modal-body p-4">
-                    <div class="row g-3">
-                        <div class="col-6">
-                            <label class="form-label small fw-bold text-muted">Vorname</label>
-                            <input class="form-control bg-light border-0" @bind="EditModel.FirstName" />
-                        </div>
-                        <div class="col-6">
-                            <label class="form-label small fw-bold text-muted">Nachname</label>
-                            <input class="form-control bg-light border-0" @bind="EditModel.LastName" />
-                        </div>
-                        <div class="col-12">
-                            <label class="form-label small fw-bold text-muted">Geburtsdatum</label>
-                            <input type="text" class="form-control bg-light border-0" placeholder="TT-MM-JJJJ" @bind="EditModel.BirthDateString" />
-                            <small class="text-muted" style="font-size: 0.75rem;">Format: 24-12-2010</small>
-                        </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label text-muted small fw-bold">Vorname</label>
+                        <input class="form-control" @bind="EditModel.FirstName" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-muted small fw-bold">Nachname</label>
+                        <input class="form-control" @bind="EditModel.LastName" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-muted small fw-bold">Geburtsdatum</label>
+                        <input type="text" class="form-control" placeholder="TT-MM-JJJJ" @bind="EditModel.BirthDateString" />
                     </div>
                 </div>
-                <div class="modal-footer border-top-0 pt-0 pe-4 pb-4">
-                    <button type="button" class="btn btn-light rounded-pill px-3" @onclick="CloseEditor">Abbrechen</button>
-                    <button type="button" class="btn btn-primary rounded-pill px-4 fw-bold" @onclick="SaveMember">Speichern</button>
+                <div class="modal-footer border-top-0">
+                    <button class="btn btn-light rounded-pill" @onclick="CloseEditor">Abbrechen</button>
+                    <button class="btn btn-primary rounded-pill px-4" @onclick="SaveMember">Speichern</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@if (ShowDeleteConfirm)
+{
+    <div class="modal-backdrop fade show" style="z-index: 1060;"></div>
+    <div class="modal fade show d-block" style="z-index: 1070;" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content text-center overflow-hidden">
+                <div class="modal-body p-4">
+                    <div class="mb-3 text-danger bg-danger bg-opacity-10 rounded-circle d-inline-flex p-3">
+                        <i class="bi bi-exclamation-triangle-fill fs-3"></i>
+                    </div>
+                    <h5 class="fw-bold mb-2">Spieler löschen?</h5>
+                    <p class="text-muted small mb-0">
+                        Möchtest du <strong>@MemberToDelete?.FullName</strong> wirklich unwiderruflich löschen?
+                    </p>
+                </div>
+                <div class="modal-footer border-top-0 justify-content-center bg-light p-2">
+                    <button class="btn btn-light rounded-pill px-4" @onclick="() => ShowDeleteConfirm = false">Abbrechen</button>
+                    <button class="btn btn-danger rounded-pill px-4" @onclick="ConfirmDelete">Löschen</button>
                 </div>
             </div>
         </div>
@@ -122,8 +140,14 @@
 @code {
     private string SearchTerm = "";
     private string SortOption = "name_asc";
+    
+    // Editor State
     private bool ShowEditor = false;
     private MemberDto EditModel = new();
+
+    // Delete State
+    private bool ShowDeleteConfirm = false;
+    private MemberDto? MemberToDelete;
 
     protected override async Task OnInitializedAsync()
     {
@@ -147,6 +171,7 @@
         };
     }
 
+    // Editor Logic
     private void OpenEditor(MemberDto? member)
     {
         EditModel = member == null 
@@ -155,6 +180,7 @@
         ShowEditor = true;
     }
     private void CloseEditor() => ShowEditor = false;
+    
     private async Task SaveMember()
     {
         if (string.IsNullOrWhiteSpace(EditModel.LastName)) return;
@@ -162,9 +188,21 @@
         else await Service.UpdateMemberAsync(EditModel);
         CloseEditor();
     }
-    private async Task ConfirmDelete(MemberDto member)
+
+    // Delete Logic
+    private void RequestDelete(MemberDto member)
     {
-        if (await JS.InvokeAsync<bool>("confirm", $"Wirklich löschen: {member.FullName}?"))
-            await Service.DeleteMemberAsync(member.MemberId);
+        MemberToDelete = member;
+        ShowDeleteConfirm = true;
+    }
+
+    private async Task ConfirmDelete()
+    {
+        if (MemberToDelete != null)
+        {
+            await Service.DeleteMemberAsync(MemberToDelete.MemberId);
+            ShowDeleteConfirm = false;
+            MemberToDelete = null;
+        }
     }
 }

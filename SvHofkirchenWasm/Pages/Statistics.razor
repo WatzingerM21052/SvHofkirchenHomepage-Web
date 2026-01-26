@@ -1,29 +1,43 @@
 @page "/statistics"
 @using SvHofkirchenWasm.Models
+@using System.Globalization
 @inject YouthService Service
 @inject IJSRuntime JS
 
 <div class="container-fluid pb-5 p-4">
-    <h3 class="mb-4 fw-bold text-primary"><i class="bi bi-bar-chart-fill me-2"></i>Statistik Dashboard</h3>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="fw-bold text-primary mb-0"><i class="bi bi-bar-chart-fill me-2"></i>Statistik Dashboard</h3>
+        @if (Service.IsInitialized)
+        {
+            <button class="btn btn-outline-danger btn-sm rounded-pill px-3 shadow-sm" @onclick="ExportPdf">
+                <i class="bi bi-file-earmark-pdf-fill me-1"></i> Als PDF exportieren
+            </button>
+        }
+    </div>
 
     @if (!Service.IsInitialized)
     {
-         <div class="text-center py-5"><div class="spinner-border text-primary"></div></div>
+         <div class="d-flex justify-content-center align-items-center" style="height: 400px;">
+             <div class="spinner-border text-primary" role="status"></div>
+         </div>
     }
     else
     {
-        <div class="row g-4 mb-5">
-            <div class="col-md-4">
-                <div class="glass-card p-3 h-100 border-0">
-                    <h6 class="text-uppercase text-muted fw-bold small mb-3">Altersklassen</h6>
+        <div class="row g-4 mb-4">
+            <div class="col-md-5 col-lg-4">
+                <div class="glass-card p-4 h-100 border-0">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <h6 class="text-uppercase text-muted fw-bold small">Altersklassen</h6>
+                        <span class="badge bg-light text-dark border">@Service.YouthMembers.Count Spieler</span>
+                    </div>
                     <div style="height: 250px; position: relative;">
                         <canvas id="ageChart"></canvas>
                     </div>
                 </div>
             </div>
-            <div class="col-md-8">
-                <div class="glass-card p-3 h-100 border-0">
-                    <h6 class="text-uppercase text-muted fw-bold small mb-3">Teilnahmeverlauf (Letzte 12 Monate)</h6>
+            <div class="col-md-7 col-lg-8">
+                <div class="glass-card p-4 h-100 border-0">
+                    <h6 class="text-uppercase text-muted fw-bold small mb-3">Trainingsteilnahme (12 Monate)</h6>
                     <div style="height: 250px; position: relative;">
                         <canvas id="monthChart"></canvas>
                     </div>
@@ -33,22 +47,19 @@
 
         <div class="row g-4">
             <div class="col-lg-7">
-                <div class="glass-card border-0">
-                    <div class="card-header bg-white border-bottom p-3 d-flex justify-content-between align-items-center">
+                <div class="glass-card border-0 h-100">
+                    <div class="card-header bg-white border-bottom p-3">
                         <h5 class="fw-bold mb-0 text-primary">🏆 Trainingsfleiß</h5>
-                        <button class="btn btn-sm btn-outline-danger" @onclick="ExportPdf">
-                            <i class="bi bi-file-earmark-pdf-fill me-1"></i> PDF Export
-                        </button>
                     </div>
                     
-                    <div class="table-responsive" style="max-height: 500px; overflow-y: auto;">
+                    <div class="table-responsive" style="max-height: 600px; overflow-y: auto;">
                         <table class="table table-hover align-middle mb-0">
-                            <thead class="bg-light sticky-top" style="z-index: 1;">
+                            <thead class="bg-light sticky-top" style="z-index: 10;">
                                 <tr>
-                                    <th class="ps-4">Rang</th>
+                                    <th class="ps-4" style="width: 60px;">Rang</th>
                                     <th>Name</th>
-                                    <th>Kategorie</th>
-                                    <th class="text-center">Trainings</th>
+                                    <th>Kat.</th>
+                                    <th class="text-center">Einheiten</th>
                                     <th class="text-end pe-4">Quote</th>
                                 </tr>
                             </thead>
@@ -57,18 +68,26 @@
                                 @foreach (var stat in GetFullAttendanceList())
                                 {
                                     <tr class="stat-rank-row">
-                                        <td class="ps-4 fw-bold text-muted">#@rank</td>
+                                        <td class="ps-4 fw-bold text-muted">
+                                            @if(rank == 1) { <i class="bi bi-trophy-fill text-warning fs-5" title="Platz 1"></i> }
+                                            else if(rank == 2) { <i class="bi bi-trophy-fill text-secondary fs-5" title="Platz 2"></i> }
+                                            else if(rank == 3) { <i class="bi bi-trophy-fill" style="color: #CD7F32;" title="Platz 3"></i> }
+                                            else { <span>#@rank</span> }
+                                        </td>
                                         <td>
                                             <span class="fw-bold text-dark">@stat.Name</span>
                                         </td>
-                                        <td><span class="badge rounded-pill @stat.Color" style="font-size: 0.7rem;">@stat.Category</span></td>
-                                        <td class="text-center fw-bold fs-5 text-primary">@stat.Count</td>
-                                        <td class="text-end pe-4">
+                                        <td><span class="badge rounded-pill @stat.Color border border-white shadow-sm" style="font-size: 0.7em;">@stat.Category</span></td>
+                                        <td class="text-center">
+                                            <span class="fw-bold text-primary bg-primary bg-opacity-10 px-2 py-1 rounded">@stat.Count</span>
+                                        </td>
+                                        <td class="text-end pe-4" style="width: 180px;">
                                             <div class="d-flex align-items-center justify-content-end gap-2">
-                                                <div class="progress" style="width: 60px; height: 6px;">
-                                                    <div class="progress-bar bg-primary" role="progressbar" style="width: @(stat.Percentage)%"></div>
+                                                <div class="progress flex-grow-1" style="height: 8px; background-color: #e9ecef; border-radius: 4px;">
+                                                    <div class="progress-bar bg-primary" role="progressbar" 
+                                                         style="width: @(stat.Percentage.ToString("0.0", CultureInfo.InvariantCulture))%; border-radius: 4px;"></div>
                                                 </div>
-                                                <small class="text-muted" style="width: 35px;">@(Math.Round(stat.Percentage))%</small>
+                                                <small class="text-muted fw-bold" style="width: 40px;">@(Math.Round(stat.Percentage))%</small>
                                             </div>
                                         </td>
                                     </tr>
@@ -81,29 +100,30 @@
             </div>
 
             <div class="col-lg-5">
-                <h5 class="fw-bold text-primary mb-3 ps-2">📅 Die letzten 5 Trainings</h5>
-                <div class="d-flex flex-column">
+                <h5 class="fw-bold text-primary mb-3 ps-1">📅 Letzte Einheiten</h5>
+                <div class="d-flex flex-column gap-3">
                      @foreach(var day in GetLastTrainings())
                      {
-                         <div class="training-step-card d-flex justify-content-between align-items-center">
-                             <div>
-                                 <div class="d-flex align-items-center gap-2 mb-1">
-                                     <i class="bi bi-calendar-event text-muted"></i>
-                                     <span class="fw-bold text-dark">@day.Date.ToString("dd. MMMM yyyy")</span>
-                                 </div>
-                                 <div class="small text-muted">
-                                     Trainingsbeteiligung
-                                 </div>
+                         <div class="glass-card p-3 d-flex align-items-center transition-hover border-start border-4 border-primary shadow-sm" style="transition: transform 0.2s;">
+                             <div class="bg-primary bg-opacity-10 p-3 rounded-circle text-primary me-3 d-flex justify-content-center align-items-center" style="width: 50px; height: 50px;">
+                                 <i class="bi bi-calendar-check-fill fs-5"></i>
+                             </div>
+                             <div class="flex-grow-1">
+                                 <h6 class="fw-bold mb-0 text-dark">@day.Date.ToString("dd. MMMM yyyy")</h6>
+                                 <small class="text-muted">Trainingstag</small>
                              </div>
                              <div class="text-end">
-                                 <span class="display-6 fw-bold text-primary">@day.Count</span>
-                                 <span class="d-block small text-muted">Teilnehmer</span>
+                                 <span class="display-6 fw-bold text-primary lh-1">@day.Count</span>
+                                 <span class="d-block small text-muted text-uppercase" style="font-size: 0.65rem; letter-spacing: 0.5px;">Teilnehmer</span>
                              </div>
                          </div>
                      }
                      @if(!GetLastTrainings().Any())
                      {
-                         <div class="alert alert-secondary border-0">Noch keine Trainingsdaten vorhanden.</div>
+                         <div class="alert alert-light border text-muted text-center py-4">
+                             <i class="bi bi-info-circle mb-2 d-block fs-4"></i>
+                             Noch keine Trainingsdaten vorhanden.
+                         </div>
                      }
                 </div>
             </div>
@@ -124,7 +144,6 @@
     {
         if (Service.IsInitialized)
         {
-            // Kleines Delay damit Canvas sicher da ist
             await Task.Delay(100); 
             await RenderCharts();
         }
@@ -183,10 +202,10 @@
 
     private async Task RenderCharts()
     {
-        // FIX: Sortierung nach Länge (damit U8 vor U10 kommt) und dann Alphabet
+        // 1. Altersklassen (Sortiert nach Länge damit U8 vor U10 kommt)
         var categories = Service.YouthMembers
             .GroupBy(m => m.AgeCategory)
-            .OrderBy(g => g.Key.Length) // U8 (2 chars) vor U10 (3 chars)
+            .OrderBy(g => g.Key.Length) 
             .ThenBy(g => g.Key)
             .ToList();
 
@@ -212,6 +231,7 @@
             }
         };
 
+        // 2. Monatsverlauf
         var months = Service.Presences
             .Where(p => p.ParsedDate > DateTime.Today.AddMonths(-12))
             .GroupBy(p => new { p.ParsedDate.Year, p.ParsedDate.Month })
@@ -238,7 +258,7 @@
                 responsive = true,
                 maintainAspectRatio = false,
                 plugins = new { legend = new { display = false } },
-                scales = new { 
+                scales = new {
                     y = new { beginAtZero = true, grid = new { display = false } },
                     x = new { grid = new { display = false } }
                 }
