@@ -1,13 +1,13 @@
 :root {
-    --primary: #052767;      
-    --primary-dark: #031b4e;
-    --accent: #ffd700;       
+    --primary: #052767;
+    --primary-dark: #02123a;
+    --accent: #ffd700;
     --accent-hover: #e6c200;
-    --bg-light: #f4f7fa;     /* Etwas frischeres Grau */
-    --text-dark: #2c3e50;
+    --bg-light: #f0f2f5;      /* Helleres, klareres Grau für besseren Kontrast */
+    --text-dark: #1a1a1a;     /* Sehr dunkles Grau für besseren Kontrast */
     --white: #ffffff;
-    --danger: #dc3545;
-    --shadow: 0 4px 12px rgba(0, 0, 0, 0.05); /* Weicherer Schatten */
+    --danger: #c82333;        /* Satteres Rot für Warnungen */
+    --shadow: 0 4px 16px rgba(0, 0, 0, 0.08); /* Etwas stärkerer Schatten */
 }
 
 body {
@@ -42,20 +42,21 @@ main { flex: 1; padding-bottom: 2rem; }
 .nav-item { font-size: 0.95rem; }
 
 .nav-item .nav-link {
-    color: rgba(255,255,255,0.75) !important;
-    border-radius: 8px;
-    margin: 6px 12px;
+    color: rgba(255,255,255,0.8) !important;
+    border-radius: 12px;
+    margin: 4px 16px;
     padding: 12px 16px;
-    transition: all 0.2s ease;
+    transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
     display: flex;
     align-items: center;
-    gap: 12px; /* Wichtig für Abstand Icon-Text */
+    gap: 12px;
+    border: 1px solid transparent;
 }
 
 /* Icon Fixierung */
 .nav-item .nav-link i {
     font-size: 1.25rem;
-    width: 24px;       /* Fixe Breite damit Text bündig ist */
+    width: 24px;
     text-align: center;
     display: inline-flex;
     justify-content: center;
@@ -63,15 +64,19 @@ main { flex: 1; padding-bottom: 2rem; }
 
 .nav-item .nav-link:hover {
     background-color: rgba(255,255,255,0.1);
-    color: var(--white) !important;
-    transform: translateX(3px);
+    color: #fff !important;
+    transform: translateX(4px);
 }
 
 .nav-item .nav-link.active {
-    background-color: var(--accent);
-    color: var(--primary) !important;
-    font-weight: 600;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    background-color: #ffffff;
+    color: #052767 !important;
+    font-weight: 700;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+}
+
+.nav-item .nav-link.active i {
+    color: #052767;
 }
 
 /* --- Cards & UI Elements --- */
@@ -104,22 +109,38 @@ main { flex: 1; padding-bottom: 2rem; }
     box-shadow: 0 15px 35px rgba(0,0,0,0.2);
 }
 
-/* --- Fancy Date Picker --- */
-.date-picker-fancy {
+/* --- Form Controls --- */
+.form-control {
+    border-radius: 10px;
+    border: 1px solid #e0e0e0;
+    padding: 10px 15px;
+    background-color: #f8f9fa;
+    transition: all 0.2s;
+}
+.form-control:focus {
+    background-color: #fff;
+    box-shadow: 0 0 0 3px rgba(5, 39, 103, 0.1);
+    border-color: #052767;
+}
+
+/* --- Date Picker --- */
+.date-picker-fancy,
+.flatpickr-input {
     appearance: none;
     background-color: var(--white);
-    border: 1px solid #e0e0e0;
+    border: 1px solid rgba(0,0,0,0.1);
     border-radius: 10px;
-    padding: 8px 12px;
+    padding: 10px 15px;
     font-family: inherit;
     font-size: 1rem;
     font-weight: 600;
     color: var(--primary);
     outline: none;
     cursor: pointer;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
 }
 .date-picker-fancy:focus { border-color: var(--primary); }
+.flatpickr-input:focus { border-color: var(--primary); }
 
 /* --- Buttons --- */
 .btn-primary { background-color: var(--primary); border-color: var(--primary); }
