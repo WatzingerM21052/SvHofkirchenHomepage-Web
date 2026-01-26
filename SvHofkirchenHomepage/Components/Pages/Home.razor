@@ -1,0 +1,85 @@
+﻿@page "/"
+@using Radzen
+@using Radzen.Blazor
+@inject NavigationManager NavigationManager
+
+<PageTitle>Schachverein Hofkirchen</PageTitle>
+
+<HeadContent>
+    <meta name="description" content="Übersicht über den Verein mit einer kurzen Vorstellung und wichtigen Infos">
+</HeadContent>
+
+<link rel="stylesheet" href="CSS/Home.css">
+
+<div id="titleImage">
+    <img src="Pictures/hofkirchenbild.webp" alt="Verein">
+</div>
+
+<section id="aboutMe">
+    <h1>Schachverein Hofkirchen</h1>
+    <h3><strong>Über uns</strong></h3>
+    <p>
+        Der Schachverein Hofkirchen wurde 1963 gegründet und hat sich seitdem als fester Bestandteil der regionalen Schachgemeinschaft etabliert.
+        Der Verein bietet eine breite Palette an Aktivitäten für Spieler aller Altersgruppen und Leistungsstufen, von Trainings und Turnieren bis hin zu gesellschaftlichen Veranstaltungen.
+        Besonders wichtig ist uns die Förderung junger Talente durch gezielte Jugendarbeit und die Teilnahme an regionalen Wettbewerben.
+    </p>
+    
+    <RadzenButton Text="Mehr erfahren" 
+                  Click="@(()=>NavigationManager.NavigateTo("about"))" 
+                  class="btnAbout"
+                  ButtonStyle="ButtonStyle.Primary" />
+
+</section>
+
+<div class="div-carousel">
+    <RadzenCarousel ButtonShade="Shade.Light" Auto="true" Interval="4000" class="img-carousel">
+        <Items>
+            @foreach (var imagePath in _imagePaths)
+            {
+                <RadzenCarouselItem>
+                    <RadzenImage Path="@imagePath" class="rz-img" AlternateText="Vereinsbild" />
+                </RadzenCarouselItem>
+            }
+        </Items>
+    </RadzenCarousel>
+</div>
+
+<style>
+    /* Kleines Inline-CSS, falls Home.css noch fehlt oder nicht lädt, 
+       damit es nicht kaputt aussieht */
+    #titleImage img {
+        width: 100%;
+        max-height: 400px;
+        object-fit: cover;
+    }
+    #aboutMe {
+        padding: 2rem;
+        text-align: center;
+        max-width: 800px;
+        margin: 0 auto;
+    }
+    .div-carousel {
+        margin: 2rem auto;
+        max-width: 800px;
+    }
+    .rz-img {
+        width: 100%;
+        height: 400px;
+        object-fit: cover;
+    }
+</style>
+
+@code
+{
+    private readonly List<string> _imagePaths =
+    [
+        "Pictures/AITraining.jpg",
+        "Pictures/AITurnier.jpg",
+        "Pictures/AIWorkshop.jpg",
+    ];
+
+    protected override void OnInitialized()
+    {
+        // Statische Seite: Kein API-Logging mehr nötig
+    }
+}

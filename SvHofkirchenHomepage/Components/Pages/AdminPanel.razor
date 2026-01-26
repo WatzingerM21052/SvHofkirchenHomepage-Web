@@ -1,0 +1,124 @@
+@page "/admin"
+@using SvHofkirchenHomepage.Services
+@using SvHofkirchenHomepage.Models
+@using Radzen
+@using Radzen.Blazor
+@inject DataService DataService
+@inject AuthenticationService AuthService
+@inject NavigationManager NavManager
+
+<PageTitle>Admin Dashboard</PageTitle>
+
+@if (!IsAuthorized)
+{
+    <p>Bitte anmelden...</p>
+}
+else
+{
+    <RadzenText TextStyle="TextStyle.H3" Style="margin-bottom: 20px;">📊 Dashboard</RadzenText>
+
+    <div class="row">
+        <div class="col-md-3 mb-4">
+            <RadzenCard>
+                <RadzenText TextStyle="TextStyle.H6">Mitglieder</RadzenText>
+                <RadzenText TextStyle="TextStyle.H2" Style="color: #007bff">@MemberCount</RadzenText>
+            </RadzenCard>
+        </div>
+        <div class="col-md-3 mb-4">
+            <RadzenCard>
+                <RadzenText TextStyle="TextStyle.H6">Jugendspieler</RadzenText>
+                <RadzenText TextStyle="TextStyle.H2" Style="color: #28a745">@YouthCount</RadzenText>
+            </RadzenCard>
+        </div>
+        <div class="col-md-3 mb-4">
+            <RadzenCard>
+                <RadzenText TextStyle="TextStyle.H6">Berichte</RadzenText>
+                <RadzenText TextStyle="TextStyle.H2" Style="color: #17a2b8">@ReportCount</RadzenText>
+            </RadzenCard>
+        </div>
+        <div class="col-md-3 mb-4">
+            <RadzenCard>
+                <RadzenText TextStyle="TextStyle.H6">Webseiten-Aufrufe</RadzenText>
+                <RadzenText TextStyle="TextStyle.H2" Style="color: #ffc107">@WebAccessCount</RadzenText>
+            </RadzenCard>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <RadzenCard>
+                <RadzenText TextStyle="TextStyle.H6">Webzugriffe (Letzte Einträge)</RadzenText>
+                <RadzenChart>
+                    <RadzenLineSeries Data="@WebVisits" CategoryProperty="Date" ValueProperty="Count" Title="Zugriffe" Smooth="true" />
+                    <RadzenCategoryAxis Padding="20" FormatString="{0:dd.MM}" />
+                </RadzenChart>
+            </RadzenCard>
+        </div>
+        <div class="col-md-4">
+            <RadzenCard>
+                <RadzenText TextStyle="TextStyle.H6">Mitglieder nach Alter</RadzenText>
+                <RadzenPieChart Data="@MemberTypes" CategoryProperty="Type" ValueProperty="Count" />
+            </RadzenCard>
+        </div>
+    </div>
+}
+
+@code {
+    private bool IsAuthorized = false;
+    private int MemberCount = 0;
+    private int YouthCount = 0;
+    private int ReportCount = 0;
+    private int WebAccessCount = 0;
+    
+    // Für Charts
+    class DataItem { public string Type { get; set; } = ""; public int Count { get; set; } }
+    class VisitItem { public DateTime Date { get; set; } public int Count { get; set; } }
+    
+    private List<DataItem> MemberTypes = new();
+    private List<VisitItem> WebVisits = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        IsAuthorized = await AuthService.IsAuthenticated();
+        if (!IsAuthorized) { NavManager.NavigateTo("/login"); return; }
+
+        var data = await DataService.GetDataAsync();
+
+        MemberCount = data.Member?.Count ?? 0;
+        YouthCount = data.Member?.Count(m => m.YouthStatus == 1) ?? 0;
+        ReportCount = data.Report?.Count ?? 0;
+        WebAccessCount = data.Webaccess?.Count ?? 0;
+
+        // Pie Chart Data
+        MemberTypes = new List<DataItem>
+        {
+            new DataItem { Type = "Erwachsene", Count = MemberCount - YouthCount },
+            new DataItem { Type = "Jugend", Count = YouthCount }
+        };
+
+        // Line Chart Data (Simuliert Gruppierung nach Tag)
+        if (data.Webaccess != null)
+        {
+            WebVisits = data.Webaccess
+                .Select(w => ParseDate(w.Date))
+                .Where(d => d != DateTime.MinValue)
+                .GroupBy(d => d.Date)
+                .OrderByDescending(g => g.Key)
+                .Take(7) // Letzte 7 Tage
+                .Select(g => new VisitItem { Date = g.Key, Count = g.Count() })
+                .OrderBy(v => v.Date)
+                .ToList();
+        }
+    }
+
+    private DateTime ParseDate(string dateStr)
+    {
+        // Versucht das Format aus deiner DB zu parsen: 03-07-2025-08-21-21-242
+        // Wir nehmen einfach die ersten 10 Zeichen (dd-MM-yyyy)
+        if (dateStr.Length >= 10 && DateTime.TryParseExact(dateStr.Substring(0, 10), "dd-MM-yyyy", null, System.Globalization.DateTimeStyles.None, out var d))
+        {
+            return d;
+        }
+        return DateTime.MinValue;
+    }
+}

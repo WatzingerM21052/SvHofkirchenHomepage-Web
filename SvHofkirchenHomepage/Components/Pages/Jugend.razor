@@ -1,0 +1,284 @@
+@page "/youth"
+@using SvHofkirchenHomepage.Models
+@using SvHofkirchenHomepage.Services
+@using Radzen
+@using Radzen.Blazor
+@inject DataService DataService
+@inject DialogService DialogService
+
+<PageTitle>Schachverein Hofkirchen - Jugend</PageTitle>
+
+<style>
+    .jugend-container {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 20px;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    .jugend-header {
+        text-align: center;
+        color: #2c3e50;
+        margin-bottom: 2rem;
+        font-weight: 700;
+    }
+    .section-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        padding: 25px;
+        margin-bottom: 30px;
+        border: 1px solid #eee;
+    }
+    .member-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    .member-item:last-child {
+        border-bottom: none;
+    }
+</style>
+
+<div class="jugend-container">
+    <h2 class="jugend-header">♟️ Jugendverwaltung</h2>
+
+    <RadzenTabs RenderMode="TabRenderMode.Client">
+        <Tabs>
+            
+            <RadzenTabsItem Text="Mitglieder">
+                <div class="section-card">
+                    <h4 class="mb-4 text-primary">Aktuelle Jugendspieler</h4>
+                    
+                    @if (Jugendliche.Count == 0)
+                    {
+                        <p class="text-muted text-center">Keine Jugendlichen gefunden.</p>
+                    }
+                    else
+                    {
+                        <ul style="list-style: none; padding: 0;">
+                            @foreach (var member in Jugendliche)
+                            {
+                                <li class="member-item">
+                                    <div>
+                                        <div style="font-weight: bold; font-size: 1.1rem;">
+                                            @member.MemberFirstName @member.MemberLastName
+                                        </div>
+                                        <div style="font-size: 0.85rem; color: #888;">
+                                            📅 Geb: @member.MemberBirthdate
+                                        </div>
+                                    </div>
+                                    <RadzenButton Icon="close" 
+                                                  ButtonStyle="ButtonStyle.Danger" 
+                                                  Size="ButtonSize.Small" 
+                                                  Variant="Variant.Flat" 
+                                                  Click="@(() => RemoveMember(member))" />
+                                </li>
+                            }
+                        </ul>
+                    }
+                </div>
+
+                <div class="section-card" style="background-color: #f8f9fa;">
+                    <h5 class="mb-3">Neuen Jugendlichen hinzufügen</h5>
+                    <RadzenStack Orientation="Orientation.Horizontal" Gap="1rem">
+                        <RadzenDropDown @bind-Value="SelectedMemberId"
+                                        Data="@AvailableMembers"
+                                        TextProperty="FullName"
+                                        ValueProperty="MemberId"
+                                        Placeholder="Person auswählen..."
+                                        Style="flex-grow: 1;"
+                                        FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                                        AllowFiltering="true" />
+                        
+                        <RadzenButton Text="Hinzufügen" 
+                                      Icon="add" 
+                                      ButtonStyle="ButtonStyle.Success" 
+                                      Click="AddMember" 
+                                      Disabled="@(SelectedMemberId == null)" />
+                    </RadzenStack>
+                    <p class="mt-2 text-muted small">
+                        * Hinweis: Änderungen auf dieser statischen Seite werden nicht dauerhaft gespeichert.
+                    </p>
+                </div>
+            </RadzenTabsItem>
+
+            <RadzenTabsItem Text="Anwesenheit">
+                <div class="section-card">
+                    <h4 class="mb-3 text-primary">Letzte Trainings</h4>
+                    <p class="text-muted">Historie aus der Datenbank</p>
+
+                    <RadzenDataGrid Data="@PresenceHistory" TItem="PresenceGroup" AllowPaging="true" PageSize="5">
+                        <Columns>
+                            <RadzenDataGridColumn TItem="PresenceGroup" Property="Date" Title="Datum" Width="120px" />
+                            <RadzenDataGridColumn TItem="PresenceGroup" Title="Anwesende Spieler">
+                                <Template Context="data">
+                                    <div style="display: flex; flex-wrap: wrap; gap: 5px;">
+                                        @foreach (var name in data.MemberNames)
+                                        {
+                                            <span class="badge bg-secondary">@name</span>
+                                        }
+                                    </div>
+                                </Template>
+                            </RadzenDataGridColumn>
+                            <RadzenDataGridColumn TItem="PresenceGroup" Title="Anzahl" Width="80px">
+                                <Template Context="data">
+                                    <strong>@data.Count</strong>
+                                </Template>
+                            </RadzenDataGridColumn>
+                        </Columns>
+                    </RadzenDataGrid>
+                </div>
+            </RadzenTabsItem>
+
+            <RadzenTabsItem Text="Statistik">
+                <div class="section-card">
+                    <h4 class="mb-4 text-primary">Trainings-Weltmeister 🏆</h4>
+                    
+                    <RadzenChart>
+                        <RadzenColumnSeries Data="@TopAttendees" 
+                                            CategoryProperty="Name" 
+                                            Title="Anwesenheiten" 
+                                            LineType="LineType.Dashed" 
+                                            ValueProperty="Count">
+                            <RadzenSeriesDataLabels Visible="true" />
+                        </RadzenColumnSeries>
+                        <RadzenColumnOptions Radius="5" />
+                        <RadzenValueAxis Min="0" Step="1" />
+                    </RadzenChart>
+                </div>
+            </RadzenTabsItem>
+
+        </Tabs>
+    </RadzenTabs>
+</div>
+
+@code {
+    // --- Daten ---
+    private List<MemberDto> AllMembers = new();
+    private List<MemberDto> Jugendliche = new();
+    private List<MemberViewModel> AvailableMembers = new(); // Für Dropdown
+    private List<PresenceGroup> PresenceHistory = new();
+    private List<AttendeeStat> TopAttendees = new();
+
+    private int? SelectedMemberId;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var data = await DataService.GetDataAsync();
+        
+        if (data.Member != null)
+        {
+            AllMembers = data.Member;
+            
+            // 1. Jugendliche filtern (YouthStatus == 1)
+            Jugendliche = AllMembers
+                .Where(m => m.YouthStatus == 1)
+                .OrderBy(m => m.MemberLastName)
+                .ToList();
+
+            // 2. Verfügbare Erwachsene/Andere für Dropdown laden
+            UpdateAvailableMembers();
+        }
+
+        // 3. Anwesenheitsdaten aufbereiten
+        if (data.YouthPresence != null && data.Member != null)
+        {
+            // Gruppieren nach Datum
+            PresenceHistory = data.YouthPresence
+                .GroupBy(p => p.PresenceDate)
+                .Select(g => new PresenceGroup
+                {
+                    Date = g.Key,
+                    MemberNames = g.Select(p => 
+                        AllMembers.FirstOrDefault(m => m.MemberId == p.MemberId)?
+                        .MemberFirstName ?? "Unbekannt").ToList(),
+                    Count = g.Count()
+                })
+                .OrderByDescending(g => ParseDate(g.Date)) // Hilfsfunktion für Sortierung
+                .ToList();
+
+            // Statistik: Wer war am öftesten da?
+            TopAttendees = data.YouthPresence
+                .GroupBy(p => p.MemberId)
+                .Select(g => new AttendeeStat
+                {
+                    Name = AllMembers.FirstOrDefault(m => m.MemberId == g.Key)?.MemberFirstName ?? "Unbekannt",
+                    Count = g.Count()
+                })
+                .OrderByDescending(s => s.Count)
+                .Take(10) // Top 10
+                .ToList();
+        }
+    }
+
+    private void UpdateAvailableMembers()
+    {
+        // Alle Mitglieder, die NICHT schon in der Jugendliste sind
+        var youthIds = Jugendliche.Select(y => y.MemberId).ToList();
+        
+        AvailableMembers = AllMembers
+            .Where(m => !youthIds.Contains(m.MemberId))
+            .Select(m => new MemberViewModel 
+            { 
+                MemberId = m.MemberId, 
+                FullName = $"{m.MemberLastName} {m.MemberFirstName} ({m.MemberBirthdate})" 
+            })
+            .OrderBy(m => m.FullName)
+            .ToList();
+    }
+
+    private void AddMember()
+    {
+        if (SelectedMemberId.HasValue)
+        {
+            var memberToAdd = AllMembers.FirstOrDefault(m => m.MemberId == SelectedMemberId.Value);
+            if (memberToAdd != null)
+            {
+                // In-Memory Status ändern
+                memberToAdd.YouthStatus = 1; 
+                Jugendliche.Add(memberToAdd);
+                Jugendliche = Jugendliche.OrderBy(m => m.MemberLastName).ToList();
+                
+                SelectedMemberId = null;
+                UpdateAvailableMembers();
+            }
+        }
+    }
+
+    private void RemoveMember(MemberDto member)
+    {
+        // In-Memory entfernen
+        Jugendliche.Remove(member);
+        member.YouthStatus = 0; // Zurücksetzen
+        UpdateAvailableMembers();
+    }
+
+    // Hilfsfunktion um das Datum (String) sortierbar zu machen
+    private DateTime ParseDate(string dateStr)
+    {
+        if (DateTime.TryParse(dateStr, out var date)) return date;
+        return DateTime.MinValue;
+    }
+
+    // --- ViewModels ---
+    public class MemberViewModel
+    {
+        public int MemberId { get; set; }
+        public string FullName { get; set; } = "";
+    }
+
+    public class PresenceGroup
+    {
+        public string Date { get; set; } = "";
+        public List<string> MemberNames { get; set; } = new();
+        public int Count { get; set; }
+    }
+
+    public class AttendeeStat
+    {
+        public string Name { get; set; } = "";
+        public int Count { get; set; }
+    }
+}

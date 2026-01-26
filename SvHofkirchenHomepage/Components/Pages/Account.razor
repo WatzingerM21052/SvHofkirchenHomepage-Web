@@ -1,0 +1,132 @@
+@page "/account"
+@using SvHofkirchenHomepage.Services
+@using SvHofkirchenHomepage.Models
+@using Radzen
+@using Radzen.Blazor
+@inject AuthenticationService AuthService
+@inject DataService DataService
+@inject DialogService DialogService
+@inject NavigationManager NavManager
+
+<PageTitle>Schachverein Hofkirchen - Profil</PageTitle>
+
+<style>
+    .account-card {
+        max-width: 600px;
+        margin: 2rem auto;
+        padding: 2rem;
+    }
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+    .form-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: bold;
+        color: #555;
+    }
+</style>
+
+@if (!IsAuthorized)
+{
+    <p class="text-center mt-5">Bitte erst einloggen.</p>
+}
+else
+{
+    <RadzenCard class="account-card">
+        <RadzenText TextStyle="TextStyle.H4" Style="margin-bottom: 20px;">👤 Mein Profil</RadzenText>
+
+        <div class="form-group">
+            <label>Benutzername:</label>
+            <RadzenTextBox Value="@CurrentUser?.UserName" Disabled="true" Style="width: 100%;" />
+        </div>
+
+        <div class="form-group">
+            <label>E-Mail:</label>
+            <div style="display: flex; gap: 10px;">
+                <RadzenTextBox @bind-Value="@Email" Disabled="@IsEmailDisabled" Style="flex-grow: 1;" />
+                <RadzenButton Text="@(IsEmailDisabled ? "Ändern" : "OK")" 
+                              ButtonStyle="@(IsEmailDisabled ? ButtonStyle.Light : ButtonStyle.Success)"
+                              Click="@(() => IsEmailDisabled = !IsEmailDisabled)" />
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Passwort:</label>
+            <div style="display: flex; gap: 10px;">
+                <RadzenPassword Value="********" Disabled="true" Style="flex-grow: 1;" />
+                <RadzenButton Text="Ändern" ButtonStyle="ButtonStyle.Light" Click="ShowChangePasswordInfo" />
+            </div>
+        </div>
+
+        <hr style="margin: 2rem 0;" />
+        
+        <RadzenText TextStyle="TextStyle.H5">🔔 E-Mail Erinnerungen</RadzenText>
+        <p class="text-muted small">Wähle aus, wofür du benachrichtigt werden möchtest.</p>
+
+        <div class="email-preferences">
+            @foreach (var cat in Categories)
+            {
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding: 10px; background: #f9f9f9; border-radius: 5px;">
+                    <RadzenLabel Text="@cat.CategoryName" />
+                    <RadzenSwitch TValue="bool" Change="@(args => ShowDemoMessage())" />
+                </div>
+            }
+        </div>
+
+        <RadzenButton Text="Einstellungen Speichern" 
+                      ButtonStyle="ButtonStyle.Primary" 
+                      Style="width: 100%; margin-top: 20px;" 
+                      Click="SaveChanges" />
+    </RadzenCard>
+}
+
+@code {
+    private bool IsAuthorized = false;
+    private UserDto? CurrentUser;
+    private List<CategoryDto> Categories = new();
+    
+    // UI States
+    private string Email = "";
+    private bool IsEmailDisabled = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        IsAuthorized = await AuthService.IsAuthenticated();
+        if (!IsAuthorized) 
+        { 
+            NavManager.NavigateTo("/login"); 
+            return;
+        }
+
+        // Daten laden
+        var data = await DataService.GetDataAsync();
+        Categories = data.Category ?? new();
+        
+        // Wir nehmen einfach den ersten User oder den Admin für die Demo
+        CurrentUser = data.User?.FirstOrDefault(u => u.UserName == "admin") 
+                      ?? new UserDto { UserName = "DemoUser", UserEmail = "demo@verein.at" };
+        
+        Email = CurrentUser.UserEmail ?? "";
+    }
+
+    private void ShowChangePasswordInfo()
+    {
+        DialogService.Alert("In dieser Demo-Version kann das Passwort nicht geändert werden, da keine Datenbankverbindung besteht.", "Hinweis");
+    }
+
+    private void ShowDemoMessage()
+    {
+        // Optional: Kleine Toast-Nachricht, dass nichts gespeichert wird
+    }
+
+    private async Task SaveChanges()
+    {
+        await DialogService.Alert(
+            "Deine Einstellungen wurden (simuliert) gespeichert!\n\n" +
+            "Hinweis: Da dies eine statische GitHub Pages Seite ist, werden die Daten beim Neuladen der Seite zurückgesetzt.", 
+            "Erfolg");
+            
+        IsEmailDisabled = true;
+    }
+}

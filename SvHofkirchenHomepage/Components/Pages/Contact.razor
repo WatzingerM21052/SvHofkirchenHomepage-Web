@@ -1,0 +1,97 @@
+@page "/contact"
+@using System.ComponentModel.DataAnnotations
+@using Radzen
+@using Radzen.Blazor
+@inject DialogService DialogService
+
+<PageTitle>Schachverein Hofkirchen - Kontakt</PageTitle>
+
+<link rel="stylesheet" href="CSS/Contact.css" />
+
+<HeadContent>
+    <meta name="description" content="Möglichkeit Email an Verein zu senden und Kontakt aufzunehmen">
+</HeadContent>
+
+<div class="contact-form-header">
+    <h3>Kontaktformular</h3>
+</div>
+
+<EditForm Model="_formModel" OnValidSubmit="SubmitForm" class="contact-form">
+    <DataAnnotationsValidator />
+
+    <div class="form-group">
+        <label for="name" class="form-label">Name</label>
+        <InputText id="name" class="form-control" @bind-Value="_formModel.Name" />
+        <ValidationMessage For="() => _formModel.Name" />
+    </div>
+
+    <div class="form-group">
+        <label for="email" class="form-label">E-Mail-Adresse</label>
+        <InputText id="email" type="email" class="form-control" @bind-Value="_formModel.Email" />
+        <ValidationMessage For="() => _formModel.Email" />
+    </div>
+
+    <div class="form-group">
+        <label for="message" class="form-label">Ihre Nachricht</label>
+        <InputTextArea id="message" class="form-control" @bind-Value="_formModel.Message" />
+        <ValidationMessage For="() => _formModel.Message" />
+    </div>
+
+    <div class="form-group form-check">
+        <InputCheckbox id="consent" class="form-check-input" @bind-Value="_formModel.Consent" />
+        <label for="consent" class="form-check-label">
+            Ich bin mit der Verarbeitung meiner Eingaben zum Zwecke der Anfragebearbeitung einverstanden.
+        </label>
+        <ValidationMessage For="() => _formModel.Consent" />
+    </div>
+
+    <RadzenButton ButtonType="ButtonType.Submit" Text="Absenden" Style="width: 100%; margin-top: 20px;" />
+</EditForm>
+
+@code {
+    private readonly FormModel _formModel = new();
+
+    private async Task SubmitForm()
+    {
+        // Da dies eine statische WebAssembly-Seite ist, können wir keine C#-Mails versenden.
+        // Option A: Integration von Formspree (HTML Form Action)
+        // Option B: Mailto Link generieren
+        // Hier simulieren wir den Erfolg für die Demo:
+        
+        await DialogService.OpenAsync("Anfrage gesendet", ds =>
+            @<div>
+                <p class="popup-text" style="text-align: center; margin: 20px;">
+                    Danke für Ihre Nachricht, @_formModel.Name!<br><br>
+                    Da dies eine statische Demo-Seite ist, wurde keine echte E-Mail versendet.<br>
+                    (In Produktion würde hier ein Dienst wie Formspree genutzt werden.)
+                </p>
+                <div style="text-align: center;">
+                    <RadzenButton Click=@(_ => ds.Close()) Text="Schließen" ButtonStyle="ButtonStyle.Primary" />
+                </div>
+            </div>, 
+            new DialogOptions { CloseDialogOnOverlayClick = true, ShowClose = false }
+        );
+
+        // Formular zurücksetzen
+        _formModel.Name = "";
+        _formModel.Email = "";
+        _formModel.Message = "";
+        _formModel.Consent = false;
+    }
+
+    public class FormModel
+    {
+        [Required(ErrorMessage = "Name ist erforderlich")]
+        public string Name { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "E-Mail ist erforderlich")]
+        [EmailAddress(ErrorMessage = "Ungültige E-Mail-Adresse")]
+        public string Email { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Nachricht ist erforderlich")]
+        public string Message { get; set; } = string.Empty;
+
+        [Range(typeof(bool), "true", "true", ErrorMessage = "Bitte stimmen Sie der Verarbeitung zu")]
+        public bool Consent { get; set; }
+    }
+}

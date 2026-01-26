@@ -1,0 +1,31 @@
+﻿@inherits LayoutComponentBase
+@using Radzen
+@using Radzen.Blazor
+
+<RadzenLayout Style="height: 100vh">
+    <RadzenHeader>
+        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0">
+            <RadzenSidebarToggle Click="@(() => sidebar1Expanded = !sidebar1Expanded)" />
+            <RadzenLabel Text="Schachverein Hofkirchen" Style="margin-left: 10px; font-weight: bold; font-size: 1.2rem; color: white;" />
+        </RadzenStack>
+    </RadzenHeader>
+    
+    <RadzenSidebar @bind-Expanded="@sidebar1Expanded">
+        <NavMenu />
+    </RadzenSidebar>
+    
+    <RadzenBody>
+        <div class="rz-p-4">
+            @Body
+        </div>
+        <br />
+        <br />
+        <div style="text-align: center; padding: 20px; border-top: 1px solid #eee; margin-top: auto; color: #888;">
+            &copy; @DateTime.Now.Year SV Hofkirchen an der Trattnach | <a href="impressum">Impressum</a>
+        </div>
+    </RadzenBody>
+</RadzenLayout>
+
+@code {
+    bool sidebar1Expanded = true;
+}
