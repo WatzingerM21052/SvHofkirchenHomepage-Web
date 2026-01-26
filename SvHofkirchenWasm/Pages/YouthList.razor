@@ -1,0 +1,170 @@
+@page "/youth-list"
+@using SvHofkirchenWasm.Models
+@inject YouthService Service
+@inject IJSRuntime JS
+
+<div class="container-fluid p-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold text-primary mb-0">Spielerverwaltung</h2>
+        </div>
+        <button class="btn btn-primary rounded-pill px-4 shadow-sm" @onclick="() => OpenEditor(null)">
+            <i class="bi bi-plus-lg me-2"></i> Neuer Spieler
+        </button>
+    </div>
+
+    @if (!Service.IsInitialized)
+    {
+        <div class="text-center py-5"><div class="spinner-border text-primary"></div></div>
+    }
+    else
+    {
+        <div class="glass-card p-3 mb-4">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <div class="input-group">
+                        <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-search"></i></span>
+                        <input type="text" class="form-control border-start-0 ps-0 shadow-none" placeholder="Suche..." 
+                               @bind="SearchTerm" @bind:event="oninput" />
+                    </div>
+                </div>
+                <div class="col-md-4 ms-auto">
+                     <select class="form-select shadow-none text-muted" @bind="SortOption">
+                        <option value="name_asc">Sortierung: Name (A-Z)</option>
+                        <option value="name_desc">Sortierung: Name (Z-A)</option>
+                        <option value="age_asc">Sortierung: Jüngste zuerst</option>
+                        <option value="age_desc">Sortierung: Älteste zuerst</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="glass-card overflow-hidden">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-light text-muted">
+                        <tr>
+                            <th class="ps-4">Name</th>
+                            <th>Geburtsdatum</th>
+                            <th>Kategorie</th>
+                            <th class="text-end pe-4">Optionen</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var member in GetFilteredMembers())
+                        {
+                            <tr>
+                                <td class="ps-4">
+                                    <div class="fw-bold text-dark">@member.LastName @member.FirstName</div>
+                                </td>
+                                <td class="text-muted">
+                                    @(member.BirthDate?.ToString("dd.MM.yyyy") ?? "-")
+                                </td>
+                                <td><span class="badge rounded-pill @member.CategoryColor">@member.AgeCategory</span></td>
+                                <td class="text-end pe-4">
+                                    <button class="btn btn-sm btn-light border me-2" title="Bearbeiten" @onclick="() => OpenEditor(member)">
+                                        <i class="bi bi-pencil-fill text-muted"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-danger-soft" title="Löschen" @onclick="() => ConfirmDelete(member)">
+                                        <i class="bi bi-trash-fill"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+             @if(!GetFilteredMembers().Any()) {
+                <div class="text-center py-5 text-muted opacity-50">Keine Einträge gefunden.</div>
+            }
+        </div>
+    }
+</div>
+
+@if (ShowEditor)
+{
+    <div class="modal-backdrop fade show" style="background-color: rgba(0,0,0,0.5);"></div>
+    <div class="modal fade show d-block" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg rounded-4">
+                <div class="modal-header border-bottom-0 pb-0">
+                    <h5 class="modal-title fw-bold text-primary">
+                        @(EditModel.MemberId == 0 ? "Neuen Spieler anlegen" : "Spieler bearbeiten")
+                    </h5>
+                    <button type="button" class="btn-close" @onclick="CloseEditor"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <label class="form-label small fw-bold text-muted">Vorname</label>
+                            <input class="form-control bg-light border-0" @bind="EditModel.FirstName" />
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small fw-bold text-muted">Nachname</label>
+                            <input class="form-control bg-light border-0" @bind="EditModel.LastName" />
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label small fw-bold text-muted">Geburtsdatum</label>
+                            <input type="text" class="form-control bg-light border-0" placeholder="TT-MM-JJJJ" @bind="EditModel.BirthDateString" />
+                            <small class="text-muted" style="font-size: 0.75rem;">Format: 24-12-2010</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-top-0 pt-0 pe-4 pb-4">
+                    <button type="button" class="btn btn-light rounded-pill px-3" @onclick="CloseEditor">Abbrechen</button>
+                    <button type="button" class="btn btn-primary rounded-pill px-4 fw-bold" @onclick="SaveMember">Speichern</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private string SearchTerm = "";
+    private string SortOption = "name_asc";
+    private bool ShowEditor = false;
+    private MemberDto EditModel = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        Service.OnChange += StateHasChanged;
+        await Service.InitializeAsync();
+    }
+    public void Dispose() => Service.OnChange -= StateHasChanged;
+
+    private IEnumerable<MemberDto> GetFilteredMembers()
+    {
+        var query = Service.YouthMembers.AsEnumerable();
+        if (!string.IsNullOrWhiteSpace(SearchTerm))
+            query = query.Where(m => m.FullName.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase));
+
+        return SortOption switch
+        {
+            "name_desc" => query.OrderByDescending(m => m.LastName).ThenByDescending(m => m.FirstName),
+            "age_asc" => query.OrderByDescending(m => m.BirthDate),
+            "age_desc" => query.OrderBy(m => m.BirthDate),
+            _ => query.OrderBy(m => m.LastName).ThenBy(m => m.FirstName)
+        };
+    }
+
+    private void OpenEditor(MemberDto? member)
+    {
+        EditModel = member == null 
+            ? new MemberDto { BirthDateString = "01-01-2015" } 
+            : new MemberDto { MemberId = member.MemberId, FirstName = member.FirstName, LastName = member.LastName, BirthDateString = member.BirthDateString };
+        ShowEditor = true;
+    }
+    private void CloseEditor() => ShowEditor = false;
+    private async Task SaveMember()
+    {
+        if (string.IsNullOrWhiteSpace(EditModel.LastName)) return;
+        if (EditModel.MemberId == 0) await Service.AddMemberAsync(EditModel);
+        else await Service.UpdateMemberAsync(EditModel);
+        CloseEditor();
+    }
+    private async Task ConfirmDelete(MemberDto member)
+    {
+        if (await JS.InvokeAsync<bool>("confirm", $"Wirklich löschen: {member.FullName}?"))
+            await Service.DeleteMemberAsync(member.MemberId);
+    }
+}

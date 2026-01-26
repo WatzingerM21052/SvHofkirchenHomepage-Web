@@ -1,19 +1,52 @@
-﻿<div class="@NavMenuCssClass nav-scrollable" @onclick="ToggleNavMenu">
-    <nav class="flex-column">
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="attendance">
-                <span class="bi bi-check2-square-nav-menu" aria-hidden="true"></span> Anwesenheit
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="statistics">
-                <span class="bi bi-bar-chart-fill-nav-menu" aria-hidden="true"></span> Statistik
-            </NavLink>
+﻿<div class="d-flex flex-column h-100">
+    <div class="p-4 text-center border-bottom border-secondary">
+        <a href="" class="d-block text-decoration-none">
+            <img src="Pictures/SVHofkirchenLogoWhite.svg" alt="SV Hofkirchen" class="img-fluid mb-2" style="max-height: 80px;" />
+            <h6 class="text-white mb-0 fw-bold text-uppercase letter-spacing-1">Sektion Schach</h6>
+            <small class="text-white-50">Jugend Portal</small>
+        </a>
+    </div>
+
+    <nav class="flex-grow-1 p-3">
+        <div class="nav flex-column gap-2">
+            <div class="nav-item">
+                <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+                    <i class="bi bi-speedometer2 me-2"></i> Dashboard
+                </NavLink>
+            </div>
+            <div class="nav-item">
+                <NavLink class="nav-link" href="attendance">
+                    <i class="bi bi-calendar-check me-2"></i> Anwesenheit
+                </NavLink>
+            </div>
+            <div class="nav-item">
+                <NavLink class="nav-link" href="youth-list">
+                    <i class="bi bi-people me-2"></i> Spieler & Daten
+                </NavLink>
+            </div>
+            <div class="nav-item">
+                <NavLink class="nav-link" href="statistics">
+                    <i class="bi bi-graph-up me-2"></i> Statistik
+                </NavLink>
+            </div>
         </div>
     </nav>
+
+    <div class="p-3 border-top border-secondary mt-auto">
+        <div class="nav flex-column">
+            <div class="nav-item">
+                <NavLink class="nav-link" href="settings">
+                    <i class="bi bi-gear me-2"></i> Einstellungen / DB
+                </NavLink>
+            </div>
+        </div>
+        <div class="text-center mt-3 text-white-50 small">
+            &copy; @DateTime.Now.Year SV Hofkirchen
+        </div>
+    </div>
 </div>
+
 @code {
-    // Standard Code hier lassen...
     private bool collapseNavMenu = true;
     private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
     private void ToggleNavMenu() => collapseNavMenu = !collapseNavMenu;

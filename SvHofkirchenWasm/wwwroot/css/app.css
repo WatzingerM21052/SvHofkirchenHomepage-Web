@@ -1,27 +1,119 @@
 :root {
-    --primary-color: #052767; /* Dunkelblau aus Logo */
-    --secondary-color: #3a0647; /* Lila/Dunkel Verlauf */
-    --accent-color: #ffd700; /* Gold/Gelb */
-    --text-color: #333;
-    --bg-light: #f8f9fa;
+    --primary: #052767;      /* Vereins-Blau */
+    --primary-dark: #031b4e;
+    --accent: #ffd700;       /* Gold/Gelb */
+    --accent-hover: #e6c200;
+    --bg-light: #f3f6f9;
+    --text-dark: #2c3e50;
+    --white: #ffffff;
+    --danger: #dc3545;
+    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
 
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    color: var(--text-color);
+    font-family: 'Segoe UI', system-ui, sans-serif;
     background-color: var(--bg-light);
-    margin: 0;
+    color: var(--text-dark);
 }
 
-h1, h2, h3 {
-    color: var(--primary-color);
+/* --- Layout Structure --- */
+.page {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
 }
 
+main { flex: 1; }
+
+.sidebar {
+    background: linear-gradient(180deg, var(--primary) 0%, var(--primary-dark) 100%);
+    color: white;
+}
+
+/* Sidebar Responsive Fix */
+@media (min-width: 641px) {
+    .page { flex-direction: row; }
+    .sidebar { width: 260px; height: 100vh; position: sticky; top: 0; }
+}
+
+/* --- Navigation --- */
+.nav-item { font-size: 0.95rem; }
+
+.nav-item .nav-link {
+    color: rgba(255,255,255,0.75) !important;
+    border-radius: 8px;
+    margin: 4px 12px;
+    padding: 10px 15px;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+}
+
+.nav-item .nav-link:hover {
+    background-color: rgba(255,255,255,0.1);
+    color: var(--white) !important;
+    transform: translateX(3px);
+}
+
+.nav-item .nav-link.active {
+    background-color: var(--accent);
+    color: var(--primary) !important;
+    font-weight: 600;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+/* --- Cards & Dashboard --- */
+.glass-card {
+    background: var(--white);
+    border-radius: 16px;
+    border: 1px solid rgba(0,0,0,0.05);
+    box-shadow: var(--shadow);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.glass-card:hover {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.dashboard-hero {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    color: white;
+    border-radius: 20px;
+    position: relative;
+    overflow: hidden;
+}
+
+/* --- Buttons --- */
 .btn-primary {
-    background-color: var(--primary-color);
-    border-color: var(--primary-color);
+    background-color: var(--primary);
+    border-color: var(--primary);
+}
+.btn-primary:hover { background-color: var(--primary-dark); }
+
+.btn-warning {
+    background-color: var(--accent);
+    border-color: var(--accent);
+    color: var(--primary-dark);
+}
+.btn-warning:hover { background-color: var(--accent-hover); }
+
+/* Fix für Delete Button (Rot auf Rot vermeiden) */
+.btn-danger-soft {
+    background-color: rgba(220, 53, 69, 0.1);
+    color: var(--danger);
+    border: none;
+}
+.btn-danger-soft:hover {
+    background-color: var(--danger);
+    color: white;
 }
 
-.btn-primary:hover {
-    background-color: var(--secondary-color);
-}
+/* --- Table --- */
+.table { margin-bottom: 0; }
+.table th { border-top: none; font-weight: 600; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.5px; }
+.table td { vertical-align: middle; }
+.table-hover tbody tr:hover { background-color: rgba(5, 39, 103, 0.03); }
+
+/* --- Badges --- */
+.badge { font-weight: 500; padding: 0.5em 0.8em; letter-spacing: 0.5px; }

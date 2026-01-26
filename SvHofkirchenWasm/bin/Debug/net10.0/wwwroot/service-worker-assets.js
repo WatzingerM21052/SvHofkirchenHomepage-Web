@@ -1,5 +1,5 @@
 self.assetsManifest = {
-  "version": "j395Fl64",
+  "version": "3656uBAn",
   "assets": [
     {
       "hash": "sha256-uz2nUD895Crdg9B2v4VdidkPszQzgCxrfOwggiMxUrU=",
@@ -262,12 +262,12 @@ self.assetsManifest = {
       "url": "_framework/Microsoft.Win32.Registry.i9dc47z9na.wasm"
     },
     {
-      "hash": "sha256-yuqkjpCPUC0PydxqWtewWmgEFboRCzoLe2MDwlKMVAo=",
-      "url": "_framework/SvHofkirchenWasm.ebf5iv27kx.pdb"
+      "hash": "sha256-2nsLJVYbPAgs5VdjMS3xRjXqrTH1G0l3xdMh9cSCpug=",
+      "url": "_framework/SvHofkirchenWasm.2idus8epwf.pdb"
     },
     {
-      "hash": "sha256-lvGcb/d1yxMLCbx0qSLmrtO9OaIr+gv1E06XjvIL4gk=",
-      "url": "_framework/SvHofkirchenWasm.y1pj4mdyue.wasm"
+      "hash": "sha256-UR3pXYILs6QomxUd+Z9bjh/SdyUW96cnke/gkOkbdTc=",
+      "url": "_framework/SvHofkirchenWasm.x46hkkc3ok.wasm"
     },
     {
       "hash": "sha256-i8txTGTPt84yEPhnifMAXYtYpzp2kdhPD7vDT8bQpEg=",
@@ -934,8 +934,8 @@ self.assetsManifest = {
       "url": "_framework/blazor.webassembly.66stpp682q.js"
     },
     {
-      "hash": "sha256-0dbP8AAEk8E8oR+huyLQrA90ZTmHZZ+z7Hq+F43niSs=",
-      "url": "_framework/dotnet.hwors9s87g.js"
+      "hash": "sha256-Tkur/q+rLZvVbtrAXS39gj3qRMgSPSn8OFJD9XfvEWk=",
+      "url": "_framework/dotnet.e1o0vb3axe.js"
     },
     {
       "hash": "sha256-N5+2iI/5sboutHuGSUN15R+EfBKMKSAp3J/S04NjHxY=",
@@ -978,7 +978,7 @@ self.assetsManifest = {
       "url": "_framework/netstandard.zh1h2lu7qi.wasm"
     },
     {
-      "hash": "sha256-iSM9Z/dHkGAqw2aqqRmmReIxbufeA1Cxtk8bgx5UW2E=",
+      "hash": "sha256-fbI6rK2IiesNGk0bLn3ZK9KCtGwQshnzr9TAKNNKvXc=",
       "url": "css/app.css"
     },
     {
@@ -998,7 +998,7 @@ self.assetsManifest = {
       "url": "icon-512.png"
     },
     {
-      "hash": "sha256-gtAjNuPNIQe5a8MykfxsI/8CzEwyUV5eMz4YEYis9YI=",
+      "hash": "sha256-57gwfq32ryj4ZGMUQRNjThnNVlOZlsk3PNeAeR9NU/w=",
       "url": "index.html"
     },
     {
@@ -1180,6 +1180,10 @@ self.assetsManifest = {
     {
       "hash": "sha256-jFw9MDAJTla2DQMY0eSrcSTmlJM5tPqXguDEwWsZrxk=",
       "url": "manifest.webmanifest"
+    },
+    {
+      "hash": "sha256-47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=",
+      "url": "youth.json"
     }
   ]
 };
