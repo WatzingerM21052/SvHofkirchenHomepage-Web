@@ -1,6 +1,4 @@
 ﻿@inherits LayoutComponentBase
-@using Radzen
-@using Radzen.Blazor
 
 <RadzenLayout Style="height: 100vh">
     <RadzenHeader>
@@ -18,13 +16,14 @@
         <div class="rz-p-4">
             @Body
         </div>
-        <br />
-        <br />
-        <div style="text-align: center; padding: 20px; border-top: 1px solid #eee; margin-top: auto; color: #888;">
+        
+        <div style="text-align: center; padding: 20px; border-top: 1px solid #eee; margin-top: 50px; color: #888;">
             &copy; @DateTime.Now.Year SV Hofkirchen an der Trattnach | <a href="impressum">Impressum</a>
         </div>
     </RadzenBody>
 </RadzenLayout>
+
+<RadzenComponents />
 
 @code {
     bool sidebar1Expanded = true;
