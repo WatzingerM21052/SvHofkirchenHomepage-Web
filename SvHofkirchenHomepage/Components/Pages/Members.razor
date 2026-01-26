@@ -1,84 +1,47 @@
 @page "/members"
 @using SvHofkirchenHomepage.Models
 @using SvHofkirchenHomepage.Services
-@using Radzen
-@using Radzen.Blazor
 @inject DataService DataService
 
 <PageTitle>Schachverein Hofkirchen - Mitglieder</PageTitle>
-
 <link rel="stylesheet" href="CSS/Members.css" />
 
 <div class="members-container" style="max-width: 1200px; margin: 0 auto; padding: 20px;">
-    
-    <RadzenText TextStyle="TextStyle.H3" TagName="TagName.H1" Class="rz-mb-4" Style="color: #2c3e50; text-align: center; font-weight: bold;">
+    <RadzenText TextStyle="TextStyle.H3" TagName="TagName.H1" Class="rz-mb-4" Style="text-align: center; font-weight: bold;">
         Vereinsmitglieder
     </RadzenText>
 
     <RadzenCard Class="rz-mb-4" Style="background-color: #f8f9fa;">
         <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="1rem">
             <RadzenIcon Icon="search" Style="color: #6c757d;" />
-            <RadzenTextBox Placeholder="Suche nach Name..." 
-                           @bind-Value="SearchTerm"
-                           @oninput="@(args => OnSearch(args.Value?.ToString()))"
-                           Style="width: 100%; max-width: 400px;" />
-            
-            <RadzenText TextStyle="TextStyle.Body2" Style="margin-left: auto; color: #6c757d;">
-                Anzahl: <strong>@FilteredMembers.Count</strong>
-            </RadzenText>
+            <RadzenTextBox Placeholder="Suche nach Name..." @bind-Value="SearchTerm" @oninput="@(args => OnSearch(args.Value?.ToString()))" Style="width: 100%; max-width: 400px;" />
+            <RadzenText TextStyle="TextStyle.Body2" Style="margin-left: auto;">Anzahl: <strong>@FilteredMembers.Count</strong></RadzenText>
         </RadzenStack>
     </RadzenCard>
 
     @if (IsLoading)
     {
         <div class="text-center mt-5">
-            <RadzenProgressBarValue Value="100" Mode="ProgressBarMode.Indeterminate" />
+            <RadzenProgressBar Value="100" Mode="ProgressBarMode.Indeterminate" Style="width: 200px;" />
         </div>
     }
     else
     {
-        <RadzenDataGrid Data="@FilteredMembers" TItem="MemberDto" 
-                        AllowPaging="true" PageSize="15" 
-                        AllowSorting="true" 
-                        Class="shadow-sm">
+        <RadzenDataGrid Data="@FilteredMembers" TItem="MemberDto" AllowPaging="true" PageSize="15" AllowSorting="true" Class="shadow-sm">
             <Columns>
                 <RadzenDataGridColumn TItem="MemberDto" Property="MemberLastName" Title="Nachname" Sortable="true" Width="180px">
-                    <Template Context="member">
-                        <span style="font-weight: 600;">@member.MemberLastName</span>
-                    </Template>
+                    <Template Context="member"><span style="font-weight: 600;">@member.MemberLastName</span></Template>
                 </RadzenDataGridColumn>
-                
                 <RadzenDataGridColumn TItem="MemberDto" Property="MemberFirstName" Title="Vorname" Sortable="true" Width="180px" />
-                
-                <RadzenDataGridColumn TItem="MemberDto" Property="MemberBirthdate" Title="Geburtsdatum" Sortable="true" Width="140px">
-                    <Template Context="member">
-                        @member.MemberBirthdate
-                    </Template>
-                </RadzenDataGridColumn>
-
+                <RadzenDataGridColumn TItem="MemberDto" Property="MemberBirthdate" Title="Geburtsdatum" Sortable="true" Width="140px" />
                 <RadzenDataGridColumn TItem="MemberDto" Property="MemberElo" Title="ELO" Sortable="true" Width="100px" TextAlign="TextAlign.Center">
                     <Template Context="member">
-                        @if (member.MemberElo > 0)
-                        {
-                            <RadzenBadge BadgeStyle="BadgeStyle.Info" Text="@member.MemberElo.ToString()" />
-                        }
-                        else
-                        {
-                            <span style="color: #ccc;">-</span>
-                        }
+                        @if (member.MemberElo > 0) { <RadzenBadge BadgeStyle="BadgeStyle.Info" Text="@member.MemberElo.ToString()" /> } else { <span style="color: #ccc;">-</span> }
                     </Template>
                 </RadzenDataGridColumn>
-
                 <RadzenDataGridColumn TItem="MemberDto" Title="Status" Sortable="false" Width="120px" TextAlign="TextAlign.Center">
                     <Template Context="member">
-                        @if (member.YouthStatus == 1)
-                        {
-                            <RadzenBadge BadgeStyle="BadgeStyle.Success" Text="Jugend" IsPill="true" />
-                        }
-                        else
-                        {
-                            <RadzenBadge BadgeStyle="BadgeStyle.Light" Text="Erwachsen" IsPill="true" Style="color: #555; border: 1px solid #ddd;" />
-                        }
+                        @if (member.YouthStatus == 1) { <RadzenBadge BadgeStyle="BadgeStyle.Success" Text="Jugend" IsPill="true" /> } else { <RadzenBadge BadgeStyle="BadgeStyle.Light" Text="Erwachsen" IsPill="true" Style="color: #555; border: 1px solid #ddd;" /> }
                     </Template>
                 </RadzenDataGridColumn>
             </Columns>
@@ -87,50 +50,27 @@
 </div>
 
 @code {
-    // --- State ---
     private bool IsLoading = true;
     private string SearchTerm = "";
-    
-    // --- Daten ---
     private List<MemberDto> AllMembers = new();
     private List<MemberDto> FilteredMembers = new();
 
     protected override async Task OnInitializedAsync()
     {
-        try
-        {
+        try {
             var data = await DataService.GetDataAsync();
-            if (data.Member != null)
-            {
-                // Sortierung: Nachname, dann Vorname
-                AllMembers = data.Member
-                    .OrderBy(m => m.MemberLastName)
-                    .ThenBy(m => m.MemberFirstName)
-                    .ToList();
-                
+            if (data.Member != null) {
+                AllMembers = data.Member.OrderBy(m => m.MemberLastName).ThenBy(m => m.MemberFirstName).ToList();
                 FilteredMembers = AllMembers;
             }
-        }
-        finally
-        {
-            IsLoading = false;
-        }
+        } finally { IsLoading = false; }
     }
 
     private void OnSearch(string? value)
     {
         SearchTerm = value ?? "";
-        if (string.IsNullOrWhiteSpace(SearchTerm))
-        {
-            FilteredMembers = AllMembers;
-        }
-        else
-        {
-            // Case-Insensitive Suche in Vor- und Nachname
-            FilteredMembers = AllMembers
-                .Where(m => (m.MemberFirstName != null && m.MemberFirstName.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase)) ||
-                            (m.MemberLastName != null && m.MemberLastName.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase)))
-                .ToList();
-        }
+        FilteredMembers = string.IsNullOrWhiteSpace(SearchTerm) 
+            ? AllMembers 
+            : AllMembers.Where(m => (m.MemberFirstName ?? "").Contains(SearchTerm, StringComparison.OrdinalIgnoreCase) || (m.MemberLastName ?? "").Contains(SearchTerm, StringComparison.OrdinalIgnoreCase)).ToList();
     }
 }

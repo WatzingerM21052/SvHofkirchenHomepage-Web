@@ -1,20 +1,21 @@
 @page "/users"
-@using SvHofkirchenHomepage.Services
 @using SvHofkirchenHomepage.Models
-@using Radzen
-@using Radzen.Blazor
+@using SvHofkirchenHomepage.Services
 @inject DataService DataService
 @inject AuthenticationService AuthService
 @inject NavigationManager NavManager
 
 <PageTitle>Benutzerverwaltung</PageTitle>
 
-@if (!IsAuthorized) { <p>Nicht autorisiert.</p> }
+@if (!IsAuthorized) 
+{ 
+    <p>Nicht autorisiert.</p> 
+}
 else
 {
     <RadzenText TextStyle="TextStyle.H3">👥 Benutzer</RadzenText>
     
-    <RadzenDataGrid Data="@Users" TItem="UserDto" AllowSorting="true" AllowPaging="true" PageSize="10">
+    <RadzenDataGrid Data="@UserList" TItem="UserDto" AllowSorting="true" AllowPaging="true" PageSize="10">
         <Columns>
             <RadzenDataGridColumn TItem="UserDto" Property="UserId" Title="ID" Width="50px" />
             <RadzenDataGridColumn TItem="UserDto" Property="UserName" Title="Benutzername" />
@@ -31,7 +32,9 @@ else
 
 @code {
     private bool IsAuthorized = false;
-    private List<UserDto> Users = new();
+    
+    // FIX: Umbenannt von "Users" zu "UserList", da die Klasse schon "Users" heißt
+    private List<UserDto> UserList = new();
 
     protected override async Task OnInitializedAsync()
     {
@@ -39,6 +42,6 @@ else
         if (!IsAuthorized) { NavManager.NavigateTo("/login"); return; }
 
         var data = await DataService.GetDataAsync();
-        Users = data.User ?? new();
+        UserList = data.User ?? new();
     }
 }
