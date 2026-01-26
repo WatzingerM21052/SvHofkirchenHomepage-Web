@@ -1,0 +1,37 @@
+@page "/members"
+@inject DataService DataService
+
+<PageTitle>Mitglieder</PageTitle>
+<h1>Unser Team</h1>
+
+@if (!DataService.IsInitialized)
+{
+    <p>Lade...</p>
+}
+else
+{
+    <div class="member-grid">
+        @foreach (var member in DataService.Data.Members)
+        {
+            <div class="member-card">
+                <div class="img-wrapper">
+                     <img src="@(string.IsNullOrEmpty(member.ImagePath) ? "Pictures/Person.png" : member.ImagePath)" alt="@member.LastName" />
+                </div>
+                <div class="info">
+                    <h3>@member.FirstName @member.LastName</h3>
+                    @if (!string.IsNullOrEmpty(member.Function))
+                    {
+                        <span class="badge bg-secondary">@member.Function</span>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+}
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        await DataService.InitializeAsync();
+    }
+}

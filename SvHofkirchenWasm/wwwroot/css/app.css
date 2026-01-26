@@ -1,0 +1,27 @@
+:root {
+    --primary-color: #052767; /* Dunkelblau aus Logo */
+    --secondary-color: #3a0647; /* Lila/Dunkel Verlauf */
+    --accent-color: #ffd700; /* Gold/Gelb */
+    --text-color: #333;
+    --bg-light: #f8f9fa;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: var(--text-color);
+    background-color: var(--bg-light);
+    margin: 0;
+}
+
+h1, h2, h3 {
+    color: var(--primary-color);
+}
+
+.btn-primary {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.btn-primary:hover {
+    background-color: var(--secondary-color);
+}

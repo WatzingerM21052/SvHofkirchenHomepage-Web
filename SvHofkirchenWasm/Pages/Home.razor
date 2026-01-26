@@ -1,0 +1,45 @@
+﻿@page "/"
+@inject DataService DataService
+
+<PageTitle>Home - SV Hofkirchen</PageTitle>
+
+<div class="hero-section text-center p-5">
+    <img src="Pictures/SVHofkirchenLogoBlack.svg" alt="Logo" width="150" />
+    <h1 class="mt-3">Willkommen beim SV Hofkirchen</h1>
+    <p class="lead">Sektion Schach</p>
+</div>
+
+<h2 class="mt-5 mb-3">Aktuelles</h2>
+
+@if (!DataService.IsInitialized)
+{
+    <p>Lade Daten...</p>
+}
+else
+{
+    <div class="row">
+        @foreach (var report in DataService.Data.Reports.OrderByDescending(r => r.Date).Take(3))
+        {
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 shadow-sm">
+                    @if(!string.IsNullOrEmpty(report.ImageUrl)) {
+                        <img src="@report.ImageUrl" class="card-img-top" alt="News Bild" style="height:200px; object-fit:cover;">
+                    }
+                    <div class="card-body">
+                        <h5 class="card-title">@report.Title</h5>
+                        <h6 class="card-subtitle mb-2 text-muted">@report.Date.ToShortDateString()</h6>
+                        <p class="card-text">@((report.Content.Length > 100) ? report.Content.Substring(0, 100) + "..." : report.Content)</p>
+                        <a href="reports" class="btn btn-sm btn-outline-primary">Mehr lesen</a>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        await DataService.InitializeAsync();
+    }
+}

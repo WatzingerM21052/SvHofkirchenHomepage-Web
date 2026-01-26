@@ -1,0 +1,21 @@
+﻿@inherits LayoutComponentBase
+
+<div class="page">
+    <div class="sidebar">
+        <NavMenu />
+    </div>
+
+    <main>
+        <div class="top-row px-4">
+            <h1 class="header-title">SV Hofkirchen - Sektion Schach</h1>
+        </div>
+
+        <article class="content px-4">
+            @Body
+        </article>
+
+        <footer class="footer">
+            &copy; @DateTime.Now.Year SV Hofkirchen | <a href="impressum">Impressum</a>
+        </footer>
+    </main>
+</div>
