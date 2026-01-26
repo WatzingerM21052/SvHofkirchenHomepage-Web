@@ -1,38 +1,19 @@
-﻿<div class="top-row ps-3 navbar navbar-dark">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="">SV Hofkirchen</a>
-        <button title="Navigation toggle" class="navbar-toggler" @onclick="ToggleNavMenu">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-    </div>
-</div>
-
-<div class="@NavMenuCssClass nav-scrollable" @onclick="ToggleNavMenu">
+﻿<div class="@NavMenuCssClass nav-scrollable" @onclick="ToggleNavMenu">
     <nav class="flex-column">
         <div class="nav-item px-3">
-            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
+            <NavLink class="nav-link" href="attendance">
+                <span class="bi bi-check2-square-nav-menu" aria-hidden="true"></span> Anwesenheit
             </NavLink>
         </div>
         <div class="nav-item px-3">
-            <NavLink class="nav-link" href="members">
-                <span class="bi bi-people-fill-nav-menu" aria-hidden="true"></span> Mitglieder
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="reports">
-                <span class="bi bi-newspaper-nav-menu" aria-hidden="true"></span> Berichte
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="admin">
-                <span class="bi bi-gear-fill-nav-menu" aria-hidden="true"></span> Admin
+            <NavLink class="nav-link" href="statistics">
+                <span class="bi bi-bar-chart-fill-nav-menu" aria-hidden="true"></span> Statistik
             </NavLink>
         </div>
     </nav>
 </div>
-
 @code {
+    // Standard Code hier lassen...
     private bool collapseNavMenu = true;
     private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
     private void ToggleNavMenu() => collapseNavMenu = !collapseNavMenu;
