@@ -6,7 +6,10 @@
 @if (!Service.IsInitialized)
 {
     <div class="d-flex justify-content-center align-items-center" style="height: 60vh;">
-        <div class="spinner-border text-primary" role="status"></div>
+        <div class="text-center">
+            <div class="spinner-border text-primary" role="status"></div>
+            <p class="mt-3 text-muted">Lade Vereinsdaten...</p>
+        </div>
     </div>
 }
 else
@@ -15,10 +18,10 @@ else
         <div class="dashboard-hero p-5 mb-5 shadow-lg">
             <div class="row align-items-center position-relative" style="z-index: 2;">
                 <div class="col-lg-8">
-                    <span class="badge bg-warning text-dark mb-2">Saison 2025/26</span>
+                    <span class="badge bg-warning text-dark mb-2 shadow-sm">Saison 2025/26</span>
                     <h1 class="display-4 fw-bold mb-3">Sektion Schach Jugend</h1>
                     <p class="lead mb-4 opacity-75">
-                        Willkommen im Verwaltungsportal. Hier organisierst du Training, Anwesenheit und Stammdaten der Jugendspieler.
+                        Willkommen zurück! Hier ist der Überblick über den aktuellen Trainingsbetrieb.
                     </p>
                     <div class="d-flex gap-3">
                         <a href="attendance" class="btn btn-warning fw-bold px-4 py-2 rounded-pill shadow-sm">
@@ -31,7 +34,7 @@ else
                 </div>
             </div>
             <i class="bi bi-person-workspace position-absolute text-white" 
-               style="font-size: 20rem; opacity: 0.03; right: -5rem; top: -5rem; transform: rotate(-10deg);"></i>
+               style="font-size: 20rem; opacity: 0.04; right: -5rem; top: -5rem; transform: rotate(-10deg);"></i>
         </div>
 
         <div class="row g-4">
@@ -39,7 +42,7 @@ else
                 <div class="glass-card p-4 h-100 position-relative overflow-hidden">
                     <div class="d-flex justify-content-between align-items-start">
                         <div>
-                            <p class="text-uppercase text-muted fw-bold small mb-1">Spieler Gesamt</p>
+                            <p class="text-uppercase text-muted fw-bold small mb-1">Kadergröße</p>
                             <h2 class="display-5 fw-bold text-primary mb-0">@Service.YouthMembers.Count</h2>
                         </div>
                         <div class="bg-primary bg-opacity-10 p-3 rounded-circle text-primary">
@@ -47,8 +50,9 @@ else
                         </div>
                     </div>
                     <div class="mt-3">
-                        <span class="text-success small fw-bold"><i class="bi bi-arrow-up"></i> Aktiv</span>
-                        <span class="text-muted small ms-2">im System</span>
+                         <span class="badge bg-light text-dark border">
+                             @Service.YouthMembers.Count(m => m.AgeCategory == "U8" || m.AgeCategory == "U10") Kids (U8/U10)
+                         </span>
                     </div>
                 </div>
             </div>
@@ -57,15 +61,18 @@ else
                 <div class="glass-card p-4 h-100 position-relative overflow-hidden">
                     <div class="d-flex justify-content-between align-items-start">
                         <div>
-                            <p class="text-uppercase text-muted fw-bold small mb-1">Trainings (Total)</p>
-                            <h2 class="display-5 fw-bold text-success mb-0">@Service.Presences.Select(p => p.ParsedDate.Date).Distinct().Count()</h2>
+                            <p class="text-uppercase text-muted fw-bold small mb-1">Trainings Gesamt</p>
+                            <h2 class="display-5 fw-bold text-success mb-0">
+                                @Service.Presences.Select(p => p.ParsedDate.Date).Distinct().Count()
+                            </h2>
                         </div>
                         <div class="bg-success bg-opacity-10 p-3 rounded-circle text-success">
                             <i class="bi bi-calendar-check-fill fs-3"></i>
                         </div>
                     </div>
-                    <div class="mt-3">
-                        <span class="text-muted small">Erfasste Einheiten</span>
+                    <div class="mt-3 text-muted small d-flex align-items-center gap-1">
+                        <i class="bi bi-clock-history"></i>
+                        <span>Erfasst seit: <strong>@GetFirstTrainingDate()</strong></span>
                     </div>
                 </div>
             </div>
@@ -74,20 +81,48 @@ else
                 <div class="glass-card p-4 h-100 position-relative overflow-hidden">
                     <div class="d-flex justify-content-between align-items-start">
                         <div>
-                            <p class="text-uppercase text-muted fw-bold small mb-1">Altersdurchschnitt</p>
+                            <p class="text-uppercase text-muted fw-bold small mb-1">Teilnahme Ø</p>
                             <h2 class="display-5 fw-bold text-info mb-0">
-                                @(Service.YouthMembers.Any() ? Math.Round(Service.YouthMembers.Average(m => m.Age), 1) : 0)
+                                @CalculateAverageAttendance()
                             </h2>
                         </div>
                         <div class="bg-info bg-opacity-10 p-3 rounded-circle text-info">
-                            <i class="bi bi-cake2-fill fs-3"></i>
+                            <i class="bi bi-graph-up-arrow fs-3"></i>
                         </div>
                     </div>
-                    <div class="mt-3">
-                        <span class="text-muted small">Jahre Ø</span>
+                    <div class="mt-3 text-muted small">
+                        Spieler pro Trainingseinheit
                     </div>
                 </div>
             </div>
         </div>
     </div>
+}
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        // BUG FIX: Abonnieren, damit die UI weiß, wenn Daten da sind!
+        Service.OnChange += StateHasChanged;
+        await Service.InitializeAsync();
+    }
+
+    public void Dispose()
+    {
+        Service.OnChange -= StateHasChanged;
+    }
+
+    private string GetFirstTrainingDate()
+    {
+        if (!Service.Presences.Any()) return "-";
+        var minDate = Service.Presences.Min(p => p.ParsedDate);
+        return minDate.ToString("dd.MM.yyyy");
+    }
+
+    private double CalculateAverageAttendance()
+    {
+        var distinctDates = Service.Presences.Select(p => p.ParsedDate.Date).Distinct().Count();
+        if (distinctDates == 0) return 0;
+        return Math.Round((double)Service.Presences.Count / distinctDates, 1);
+    }
 }

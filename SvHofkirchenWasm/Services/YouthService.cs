@@ -11,8 +11,8 @@ public class YouthService
     private readonly HttpClient _http;
     private readonly IJSRuntime _js;
     
-    // Version erhöht -> Löscht alten Cache beim Start
-    private const string LocalStorageKey = "SvHofkirchen_YouthData_V5_Fix"; 
+    // Version erhöht -> Erzwingt Neu-Laden der Daten beim nächsten Start
+    private const string LocalStorageKey = "SvHofkirchen_YouthData_V6_AgeFix"; 
 
     public List<MemberDto> YouthMembers { get; private set; } = new();
     public List<PresenceDto> Presences { get; private set; } = new();
@@ -34,7 +34,7 @@ public class YouthService
         {
             bool dataLoaded = false;
 
-            // 1. VERSUCH: Browser LocalStorage
+            // 1. VERSUCH: Browser LocalStorage (falls du schon was gespeichert hast)
             var localData = await _js.InvokeAsync<string>("localStorage.getItem", LocalStorageKey);
             if (!string.IsNullOrEmpty(localData))
             {
@@ -44,11 +44,10 @@ public class YouthService
                     YouthMembers = root.Members;
                     Presences = root.Presences ?? new();
                     dataLoaded = true;
-                    Console.WriteLine($"[Init] {YouthMembers.Count} Spieler aus LocalStorage geladen.");
                 }
             }
 
-            // 2. VERSUCH: youth.json vom Server (nur wenn noch keine Daten)
+            // 2. VERSUCH: youth.json vom Server
             if (!dataLoaded)
             {
                 try 
@@ -59,66 +58,44 @@ public class YouthService
                     if (response.IsSuccessStatusCode)
                     {
                         var cleanData = await response.Content.ReadFromJsonAsync<YouthDataRoot>();
-                        // WICHTIG: Wir akzeptieren die Daten nur, wenn auch wirklich Spieler drin stehen!
+                        // Nur nutzen, wenn auch wirklich Spieler drin sind!
                         if (cleanData != null && cleanData.Members != null && cleanData.Members.Count > 0)
                         {
                             YouthMembers = cleanData.Members;
                             Presences = cleanData.Presences ?? new();
                             dataLoaded = true;
-                            Console.WriteLine($"[Init] {YouthMembers.Count} Spieler aus youth.json geladen.");
-                        }
-                        else
-                        {
-                            Console.WriteLine("[Init] youth.json gefunden, aber leer. Gehe zu Fallback.");
                         }
                     }
                 }
-                catch (Exception ex) 
-                { 
-                    Console.WriteLine($"[Init] youth.json konnte nicht geladen werden: {ex.Message}");
-                }
+                catch { /* Ignorieren */ }
             }
 
-            // 3. FALLBACK: database.json (Wenn bisher nichts Sinnvolles gefunden wurde)
+            // 3. FALLBACK: database.json (Der wichtige Teil für den Start!)
             if (!dataLoaded)
             {
-                Console.WriteLine("[Init] Starte Fallback-Import aus database.json...");
                 try 
                 {
-                    // Wir nutzen JsonSerializerOptions, um sicherzustellen, dass die Property-Namen passen
-                    // (Die Member-Klasse hat [JsonPropertyName], daher sollte default passen)
                     var legacy = await _http.GetFromJsonAsync<LegacyDatabase>("database.json");
-                    
                     if (legacy != null && legacy.Member != null)
                     {
-                        // 1. Filtern: Nur YouthStatus == 1
-                        // 2. Sortieren: Nach Nachname
-                        YouthMembers = legacy.Member
-                            .Where(m => m.YouthStatus == 1)
-                            .OrderBy(m => m.LastName)
-                            .ToList();
-                        
+                        // Nur Jugendliche filtern + alte Anwesenheiten
+                        YouthMembers = legacy.Member.Where(m => m.YouthStatus == 1).OrderBy(m => m.LastName).ToList();
                         Presences = legacy.YouthPresence ?? new();
                         
-                        Console.WriteLine($"[Init] Erfolgreich {YouthMembers.Count} Jugendliche aus database.json importiert!");
-
-                        // Sofort speichern, damit wir beim nächsten Mal Schritt 1 nutzen können
+                        // Sofort cachen
                         await SaveToLocalStorage();
-                    }
-                    else
-                    {
-                        Console.WriteLine("[Init] database.json geladen, aber 'Member' Liste war leer oder null.");
+                        dataLoaded = true;
                     }
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"[Init] KRITISCHER FEHLER bei database.json Import: {ex.Message}");
+                    Console.WriteLine($"Init Fehler (Fallback): {ex.Message}");
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[Init] Unbekannter Fehler: {ex.Message}");
+            Console.WriteLine($"Init Fehler (Global): {ex.Message}");
         }
 
         IsInitialized = true;
@@ -126,7 +103,6 @@ public class YouthService
     }
 
     // --- CRUD ---
-
     public async Task AddMemberAsync(MemberDto member)
     {
         int newId = YouthMembers.Any() ? YouthMembers.Max(m => m.MemberId) + 1 : 1;
@@ -160,7 +136,6 @@ public class YouthService
     }
 
     // --- ANWESENHEIT ---
-
     public async Task TogglePresenceAsync(int memberId, DateTime date)
     {
         var existing = Presences.FirstOrDefault(p => p.MemberId == memberId && p.ParsedDate.Date == date.Date);
@@ -175,7 +150,6 @@ public class YouthService
     }
 
     // --- DATA HANDLING ---
-
     private async Task SaveToLocalStorage()
     {
         var root = new YouthDataRoot { Members = YouthMembers, Presences = Presences };
