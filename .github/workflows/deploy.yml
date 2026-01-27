@@ -29,6 +29,37 @@ jobs:
       - name: Publish .NET Project
         run: dotnet publish SvHofkirchenWasm/SvHofkirchenWasm.csproj -c Release -o release --nologo
 
+     name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [ "main" ] # Oder "master", je nachdem wie dein Hauptbranch heißt
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x' # Achte darauf, dass das zu deinem Projekt passt (8.0 oder 9.0)
+
+      # Baut die App in den Ordner 'release'
+      - name: Publish .NET Project
+        run: dotnet publish SvHofkirchenWasm/SvHofkirchenWasm.csproj -c Release -o release --nologo
+
       # FIX 1: Base-Tag automatisch setzen (Robustere Version)
       - name: Change base-tag in index.html
         run: |
@@ -36,7 +67,51 @@ jobs:
           # Tauscht jeden <base ...> Tag gegen den richtigen aus
           sed -i "s|<base href=\".*\" />|<base href=\"/$REPO_NAME/\" />|g" release/wwwroot/index.html
 
-      # FIX 2: Routing (404.html Trick)
+      # FIX 1: Replace fingerprinted asset placeholders in index.html
+      - name: Fix asset references in index.html
+        run: |
+          cd release/wwwroot
+          
+          # Find the actual fingerprinted filenames
+          BLAZOR_JS=$(ls _framework/blazor.webassembly.*.js | head -n 1 | sed 's|_framework/||')
+          DOTNET_JS=$(ls _framework/dotnet.*.js | grep -v runtime | grep -v native | head -n 1 | sed 's|_framework/||')
+          
+          # Replace placeholders with actual filenames
+          sed -i "s|blazor.webassembly.js|$BLAZOR_JS|g" index.html
+          
+          cd ../..
+
+      # FIX 2: Base-Tag automatisch setzen
+      - name: Change base-tag in index.html
+        run: |
+          REPO_NAME=$(echo "${{ github.repository }}" | awk -F / '{print $2}')
+          sed -i "s|<base href=\".*\" />|<base href=\"/$REPO_NAME/\" />|g" release/wwwroot/index.html
+
+      # FIX 3: Routing (404.html Trick)
+      - name: Copy index.html to 404.html
+        run: cp release/wwwroot/index.html release/wwwroot/404.html
+
+      # FIX 3: .nojekyll (Damit _framework geladen wird)
+      - name: Add .nojekyll file
+        run: touch release/wwwroot/.nojekyll
+
+      # Lädt den 'wwwroot' Ordner als Artefakt für GitHub Pages hoch
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: release/wwwroot
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
       - name: Copy index.html to 404.html
         run: cp release/wwwroot/index.html release/wwwroot/404.html
 
