@@ -1,6 +1,6 @@
 name: Deploy to GitHub Pages
 
-# Startet den Deploy nur, wenn auf den main oder master Branch gepusht wird
+# Führt das Skript aus, wenn auf "main" oder "master" gepusht wird
 on:
   push:
     branches: [ "main", "master" ]
@@ -9,46 +9,48 @@ jobs:
   deploy-to-github-pages:
     runs-on: ubuntu-latest
     permissions:
-      contents: write # Wichtig, damit der Bot in den Branch schreiben darf
+      contents: write # Wichtig: Erlaubt dem Bot, auf den gh-pages Branch zu schreiben
     
     steps:
+    # 1. Code auschecken
     - uses: actions/checkout@v4
 
-    # .NET installieren (Hier Version prüfen! Ich nehme an .NET 8 oder 9)
+    # 2. .NET Umgebung einrichten (Hier Version 8 oder 9 wählen, je nach deinem Projekt)
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: '8.0.x' 
 
-    # App bauen und in den Ordner 'release' veröffentlichen
+    # 3. Projekt bauen (Veröffentlicht in den Ordner 'release')
     - name: Publish .NET Project
       run: dotnet publish SvHofkirchenWasm/SvHofkirchenWasm.csproj -c Release -o release --nologo
 
     # -----------------------------------------------------------------
-    # FIX 1: Base-Tag anpassen (Damit die App im Unterordner läuft)
-    # Ersetzt <base href="/" /> durch den Repository-Namen
+    # FIX 1: Base-Tag automatisch ändern
+    # Nimmt die index.html im 'release'-Ordner und tauscht "/" gegen "/RepoName/" aus
     # -----------------------------------------------------------------
     - name: Change base-tag in index.html
       run: |
-        # Holt den Repo-Namen (z.B. 'svhofkirchenhomepage-web')
+        # Holt den Namen des Repositories (z.B. SvHofkirchenHomepage-Web)
         REPO_NAME=$(echo "${{ github.repository }}" | awk -F / '{print $2}')
         # Ersetzt den Slash durch /RepoName/
         sed -i "s|<base href=\"/\" />|<base href=\"/$REPO_NAME/\" />|g" release/wwwroot/index.html
 
     # -----------------------------------------------------------------
     # FIX 2: Routing (404.html Trick)
-    # Kopiert index.html zu 404.html, damit Reloads auf Unterseiten funktionieren
+    # Damit beim Neuladen von Unterseiten (z.B. /statistics) kein 404 kommt
     # -----------------------------------------------------------------
     - name: Copy index.html to 404.html
       run: cp release/wwwroot/index.html release/wwwroot/404.html
 
     # -----------------------------------------------------------------
-    # FIX 3: .nojekyll (Damit _framework Dateien geladen werden)
+    # FIX 3: .nojekyll (WICHTIG für Blazor)
+    # Verhindert, dass GitHub Dateien mit Unterstrich (_) ignoriert
     # -----------------------------------------------------------------
     - name: Add .nojekyll file
       run: touch release/wwwroot/.nojekyll
 
-    # Auf den Branch 'gh-pages' hochladen
+    # 4. Das Ergebnis auf den Branch 'gh-pages' hochladen
     - name: Deploy to GitHub Pages
       uses: JamesIves/github-pages-deploy-action@v4
       with:
