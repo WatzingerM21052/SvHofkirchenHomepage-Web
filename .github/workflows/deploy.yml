@@ -1,0 +1,56 @@
+name: Deploy to GitHub Pages
+
+# Startet den Deploy nur, wenn auf den main oder master Branch gepusht wird
+on:
+  push:
+    branches: [ "main", "master" ]
+
+jobs:
+  deploy-to-github-pages:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # Wichtig, damit der Bot in den Branch schreiben darf
+    
+    steps:
+    - uses: actions/checkout@v4
+
+    # .NET installieren (Hier Version prüfen! Ich nehme an .NET 8 oder 9)
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x' 
+
+    # App bauen und in den Ordner 'release' veröffentlichen
+    - name: Publish .NET Project
+      run: dotnet publish SvHofkirchenWasm/SvHofkirchenWasm.csproj -c Release -o release --nologo
+
+    # -----------------------------------------------------------------
+    # FIX 1: Base-Tag anpassen (Damit die App im Unterordner läuft)
+    # Ersetzt <base href="/" /> durch den Repository-Namen
+    # -----------------------------------------------------------------
+    - name: Change base-tag in index.html
+      run: |
+        # Holt den Repo-Namen (z.B. 'svhofkirchenhomepage-web')
+        REPO_NAME=$(echo "${{ github.repository }}" | awk -F / '{print $2}')
+        # Ersetzt den Slash durch /RepoName/
+        sed -i "s|<base href=\"/\" />|<base href=\"/$REPO_NAME/\" />|g" release/wwwroot/index.html
+
+    # -----------------------------------------------------------------
+    # FIX 2: Routing (404.html Trick)
+    # Kopiert index.html zu 404.html, damit Reloads auf Unterseiten funktionieren
+    # -----------------------------------------------------------------
+    - name: Copy index.html to 404.html
+      run: cp release/wwwroot/index.html release/wwwroot/404.html
+
+    # -----------------------------------------------------------------
+    # FIX 3: .nojekyll (Damit _framework Dateien geladen werden)
+    # -----------------------------------------------------------------
+    - name: Add .nojekyll file
+      run: touch release/wwwroot/.nojekyll
+
+    # Auf den Branch 'gh-pages' hochladen
+    - name: Deploy to GitHub Pages
+      uses: JamesIves/github-pages-deploy-action@v4
+      with:
+        folder: release/wwwroot
+        branch: gh-pages
