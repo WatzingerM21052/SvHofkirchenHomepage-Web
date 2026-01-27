@@ -1,5 +1,5 @@
 self.assetsManifest = {
-  "version": "X1tvssKO",
+  "version": "07wIs/kR",
   "assets": [
     {
       "hash": "sha256-uz2nUD895Crdg9B2v4VdidkPszQzgCxrfOwggiMxUrU=",
@@ -262,12 +262,12 @@ self.assetsManifest = {
       "url": "_framework/Microsoft.Win32.Registry.i9dc47z9na.wasm"
     },
     {
-      "hash": "sha256-TezflIE0CzgzFG/vQea+s9YsLfdrxJEwFe5CmKJ99xc=",
-      "url": "_framework/SvHofkirchenWasm.hnsxhvlgye.pdb"
+      "hash": "sha256-d2Ie2DZ/mtCt3vboYBQJPpzz2ldlDqCXccAoqN7gdlA=",
+      "url": "_framework/SvHofkirchenWasm.1i00jyu8j2.pdb"
     },
     {
-      "hash": "sha256-GiSp0emCUwwRI66ipzn5Xz5/T1IT/MXQm9bRDJ7+grI=",
-      "url": "_framework/SvHofkirchenWasm.iq2hcwf81k.wasm"
+      "hash": "sha256-or2EhakAxNR0PtgyHXoIgn2qq6BroiIBzjKHMvrP+GE=",
+      "url": "_framework/SvHofkirchenWasm.ykb4unpy7i.wasm"
     },
     {
       "hash": "sha256-i8txTGTPt84yEPhnifMAXYtYpzp2kdhPD7vDT8bQpEg=",
@@ -938,10 +938,6 @@ self.assetsManifest = {
       "url": "_framework/dotnet.js.map"
     },
     {
-      "hash": "sha256-LFiEfQ7pfisWop7FSptxeQR2Kt7vmX94iYai9sEmRk8=",
-      "url": "_framework/dotnet.k2173h9c7t.js"
-    },
-    {
       "hash": "sha256-zE11fbcG2CeLl1Zi+NJgMOfWpdjuUWNte+icrtAO58I=",
       "url": "_framework/dotnet.native.87vtjjdetb.js"
     },
@@ -956,6 +952,10 @@ self.assetsManifest = {
     {
       "hash": "sha256-7bWTJAv6qsJRSeB2gAiAXf7QxmNQ/aizINHRUCg30Mo=",
       "url": "_framework/dotnet.runtime.js.map"
+    },
+    {
+      "hash": "sha256-lo2rT8ZlHAA2MPUaTIMbfoCWSW45XiBPRIokVJuixqk=",
+      "url": "_framework/dotnet.ytyp9ezx88.js"
     },
     {
       "hash": "sha256-SZLtQnRc0JkwqHab0VUVP7T3uBPSeYzxzDnpxPpUnHk=",
@@ -978,7 +978,7 @@ self.assetsManifest = {
       "url": "_framework/netstandard.zh1h2lu7qi.wasm"
     },
     {
-      "hash": "sha256-EJjwmOKNdciiqT2r806rRdU2SSWyBrkFyt6GEAvIdI8=",
+      "hash": "sha256-DWRBhH+Yj1m+7QliQ06nHxnNyMkzt9EsxzL4JjUvT14=",
       "url": "css/app.css"
     },
     {
@@ -998,7 +998,7 @@ self.assetsManifest = {
       "url": "icon-512.png"
     },
     {
-      "hash": "sha256-daxC+VczbLDlKmD1v6CoeBVdfZ3JxTdu+bVX62x5kZw=",
+      "hash": "sha256-8mKg9jLkumG1ViXHkr0qsa3WW0GBJVPOHaKCHQwNYVw=",
       "url": "index.html"
     },
     {

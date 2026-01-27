@@ -32,6 +32,8 @@
         <a class="dismiss">🗙</a>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
@@ -57,18 +59,14 @@
         window.generatePdf = (title, headers, data) => {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
-
             // Header Bar
-            doc.setFillColor(5, 39, 103); // Vereinsblau
+            doc.setFillColor(5, 39, 103);
             doc.rect(0, 0, 210, 20, 'F');
-
-            // Titel weiß auf Blau
             doc.setFontSize(16);
             doc.setTextColor(255, 255, 255);
             doc.setFont("helvetica", "bold");
             doc.text("SV Hofkirchen - Sektion Schach", 14, 13);
 
-            // Subtitel schwarz
             doc.setTextColor(50, 50, 50);
             doc.setFontSize(14);
             doc.text(title, 14, 35);
@@ -78,44 +76,15 @@
             doc.setFont("helvetica", "normal");
             doc.text(`Stand: ${new Date().toLocaleDateString('de-DE')}`, 14, 42);
 
-            // Tabelle Fancier machen
             doc.autoTable({
                 startY: 50,
                 head: [headers],
                 body: data,
                 theme: 'grid',
-                headStyles: {
-                    fillColor: [5, 39, 103],
-                    textColor: 255,
-                    fontStyle: 'bold',
-                    halign: 'center'
-                },
-                styles: {
-                    font: 'helvetica',
-                    fontSize: 10,
-                    cellPadding: 3
-                },
-                columnStyles: {
-                    0: { halign: 'center', fontStyle: 'bold', cellWidth: 20 }, // Rang
-                    3: { halign: 'center' }, // Anzahl
-                    4: { halign: 'right' }   // Quote
-                },
-                alternateRowStyles: {
-                    fillColor: [245, 247, 250]
-                }
+                headStyles: { fillColor: [5, 39, 103], textColor: 255, fontStyle: 'bold' },
+                alternateRowStyles: { fillColor: [245, 247, 250] }
             });
-
-            // Footer Line
-            const pageCount = doc.internal.getNumberOfPages();
-            for (let i = 1; i <= pageCount; i++) {
-                doc.setPage(i);
-                doc.setFontSize(8);
-                doc.setTextColor(150);
-                doc.text('Erstellt mit SV Hofkirchen JugendApp', 14, 285);
-                doc.text('Seite ' + i, 190, 285);
-            }
-
-            doc.save('Statistik_SVH.pdf');
+            doc.save(title + '.pdf');
         }
 
         window.initDatePicker = (elementId, initialDate, dotNetHelper) => {
@@ -124,8 +93,8 @@
                 defaultDate: initialDate,
                 dateFormat: "Y-m-d",
                 altInput: true,
-                altFormat: "D, j. F Y", // Zeigt "Dienstag, 27. Januar 2026"
-                disableMobile: "true", // Zwingt den Custom Style auch auf Handys
+                altFormat: "D, j. F Y",
+                disableMobile: "true",
                 onChange: function (selectedDates, dateStr, instance) {
                     dotNetHelper.invokeMethodAsync('OnDateSelected', dateStr);
                 }

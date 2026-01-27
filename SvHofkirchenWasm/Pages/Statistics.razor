@@ -57,7 +57,7 @@
         <div class="row g-4 mb-4">
             <div class="col-lg-4 col-md-6">
                 <div class="glass-card p-4 h-100 position-relative">
-                    <h6 class="text-uppercase text-muted fw-bold small mb-4">Altersstruktur</h6>
+                    <h6 class="text-uppercase text-muted fw-bold small mb-4">Altersstruktur (Kader)</h6>
                     <div style="height: 220px; position: relative;">
                         <canvas id="ageChart"></canvas>
                     </div>
@@ -187,7 +187,7 @@
     private string SelectedSeason = "2025/26";
     private List<string> AvailableSeasons = new();
     
-    // Blazor Dropdown Logic
+    // Dropdown Logic
     private bool isSeasonDropdownOpen = false;
     private void ToggleSeasonDropdown() => isSeasonDropdownOpen = !isSeasonDropdownOpen;
 
@@ -213,9 +213,17 @@
 
     private void CalculateAvailableSeasons()
     {
-        var years = Service.Presences.Select(p => GetSeasonName(p.ParsedDate)).Distinct().ToList();
-        var current = GetSeasonName(DateTime.Today);
+        // Saisonwechsel ist der 1. September
+        string GetSeason(DateTime d) 
+        {
+            int startYear = (d.Month >= 9) ? d.Year : d.Year - 1;
+            return $"{startYear}/{ (startYear + 1).ToString().Substring(2) }";
+        }
+
+        var years = Service.Presences.Select(p => GetSeason(p.ParsedDate)).Distinct().ToList();
+        var current = GetSeason(DateTime.Today);
         if (!years.Contains(current)) years.Add(current);
+        
         AvailableSeasons = years.OrderByDescending(x => x).ToList();
         
         if (!AvailableSeasons.Contains(SelectedSeason)) 
@@ -224,7 +232,6 @@
 
     private string GetSeasonName(DateTime date)
     {
-        // Saisonwechsel 1. September
         int startYear = (date.Month >= 9) ? date.Year : date.Year - 1;
         return $"{startYear}/{ (startYear + 1).ToString().Substring(2) }"; 
     }
@@ -252,7 +259,7 @@
                 int count = filteredPresences.Count(p => p.MemberId == m.MemberId); 
                 return new { Member = m, Count = count, Percentage = (double)count / totalTrainings * 100 }; 
             })
-            .Where(x => x.Count > 0) // Nur Leute anzeigen die in DIESER Saison da waren?
+            .Where(x => x.Count > 0) // Nur anzeigen wer da war? Hier: Ja.
             .OrderByDescending(x => x.Count)
             .ThenBy(x => x.Member.LastName)
             .Select(x => (x.Member.FullName, x.Member.AgeCategory, x.Member.CategoryColor, x.Count, x.Percentage));
@@ -290,12 +297,14 @@
     {
         var filteredPresences = GetFilteredPresences().ToList();
 
+        // Age Chart (Kader bleibt Gesamt)
         var categories = Service.YouthMembers.GroupBy(m => m.AgeCategory).OrderBy(g => g.Key.Length).ThenBy(g => g.Key).ToList();
         var ageDataset = new[] { new { data = categories.Select(g => g.Count()).ToArray(), backgroundColor = new[] { "#198754", "#0dcaf0", "#0d6efd", "#ffc107", "#dc3545", "#212529", "#6c757d" }, borderWidth = 0 } };
         var ageData = new { labels = categories.Select(g => g.Key).ToArray(), datasets = ageDataset };
         var ageOptions = new { plugins = new { legend = new { position = "right" } }, cutout = "70%", maintainAspectRatio = false };
         var ageConfig = new { type = "doughnut", data = ageData, options = ageOptions };
         
+        // Month Chart (Gefiltert auf Saison)
         var months = filteredPresences
             .GroupBy(p => new { p.ParsedDate.Year, p.ParsedDate.Month })
             .OrderBy(g => g.Key.Year).ThenBy(g => g.Key.Month)

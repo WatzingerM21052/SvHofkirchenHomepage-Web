@@ -92,16 +92,16 @@ else
                     </div>
                     <div class="mt-3">
                         @{
-                            // FIX: Prozentrechnung relativ zur Gesamtanzahl der Spieler
+                            // FIX: Prozentrechnung relativ zur Gesamtanzahl
                             double avg = CalculateAverageAttendance();
                             double total = Service.YouthMembers.Count > 0 ? Service.YouthMembers.Count : 1;
-                            double percentage = (avg / total) * 100;
+                            double percentage = Math.Min(100, (avg / total) * 100);
                         }
                         <div class="d-flex justify-content-between small mb-1">
                             <span class="text-muted">Quote</span>
                             <span class="fw-bold text-success">@Math.Round(percentage, 0)%</span>
                         </div>
-                        <div class="progress" style="height: 6px;">
+                        <div class="progress" style="height: 6px; border-radius: 10px;">
                             <div class="progress-bar bg-success" role="progressbar" style="width: @((int)percentage)%">
                             </div>
                         </div>

@@ -113,7 +113,9 @@ main {
     /* Deutlicherer Rand */
     box-shadow: var(--shadow-soft);
     transition: transform 0.2s, box-shadow 0.2s;
-    overflow: hidden;
+
+    /* WICHTIG: Overflow muss sichtbar sein, sonst werden Dropdowns abgeschnitten! */
+    overflow: visible;
 }
 
 .dashboard-hero {
@@ -123,6 +125,27 @@ main {
     position: relative;
     overflow: hidden;
     box-shadow: 0 10px 20px -5px rgba(5, 39, 103, 0.4);
+}
+
+/* --- Dropdown Animationen (NEU) --- */
+.dropdown-menu {
+    animation: slideIn 0.2s ease-out;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    margin-top: 8px !important;
+    /* Etwas Abstand zum Button */
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 /* --- Modal Styles (Custom) --- */

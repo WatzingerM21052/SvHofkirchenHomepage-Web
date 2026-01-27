@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("SvHofkirchenWasm")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+01b4db7c37577e2bdb4c719c5bf9714289a05d54")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+1800ff0a26f092f2ba31a87a9744b3976b334711")]
 [assembly: System.Reflection.AssemblyProductAttribute("SvHofkirchenWasm")]
 [assembly: System.Reflection.AssemblyTitleAttribute("SvHofkirchenWasm")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

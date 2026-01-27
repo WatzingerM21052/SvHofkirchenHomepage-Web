@@ -45,21 +45,36 @@
 
                         <ul class="dropdown-menu show border-0 shadow-lg rounded-3 w-100 mt-2 p-2 animate-slide-in"
                             style="z-index: 1001; backdrop-filter: blur(10px); background: rgba(255,255,255,0.95);">
+
                             <li>
-                                <h6 class="dropdown-header text-uppercase small fw-bold text-muted">Sortierung</h6>
+                                <h6 class="dropdown-header text-uppercase small fw-bold text-muted" style="font-size: 0.7rem;">
+                                    Sortierung</h6>
                             </li>
+
                             <li><button class="dropdown-item rounded-2 mb-1 @(SortOption == "name_asc" ? "active fw-bold" : "")"
-                                    @onclick='() => SelectSort("name_asc")'>A-Z (Nachname)</button></li>
+                                    @onclick='() => SelectSort("name_asc")'>
+                                    <i class="bi bi-sort-alpha-down me-2"></i>A-Z (Nachname)
+                                </button></li>
+
                             <li><button
                                     class="dropdown-item rounded-2 mb-1 @(SortOption == "name_desc" ? "active fw-bold" : "")"
-                                    @onclick='() => SelectSort("name_desc")'>Z-A (Nachname)</button></li>
+                                    @onclick='() => SelectSort("name_desc")'>
+                                    <i class="bi bi-sort-alpha-down-alt me-2"></i>Z-A (Nachname)
+                                </button></li>
+
                             <li>
-                                <hr class="dropdown-divider">
+                                <hr class="dropdown-divider my-2">
                             </li>
+
                             <li><button class="dropdown-item rounded-2 mb-1 @(SortOption == "age_asc" ? "active fw-bold" : "")"
-                                    @onclick='() => SelectSort("age_asc")'>Jüngste zuerst</button></li>
+                                    @onclick='() => SelectSort("age_asc")'>
+                                    <i class="bi bi-sort-numeric-down me-2"></i>Jüngste zuerst
+                                </button></li>
+
                             <li><button class="dropdown-item rounded-2 mb-1 @(SortOption == "age_desc" ? "active fw-bold" : "")"
-                                    @onclick='() => SelectSort("age_desc")'>Älteste zuerst</button></li>
+                                    @onclick='() => SelectSort("age_desc")'>
+                                    <i class="bi bi-sort-numeric-down-alt me-2"></i>Älteste zuerst
+                                </button></li>
                         </ul>
                     }
                 </div>
@@ -217,7 +232,6 @@
     private string SearchTerm = "";
     private string SortOption = "name_asc";
 
-    // FIX: Eigene Variable für Dropdown-Status
     private bool isFilterOpen = false;
     private void ToggleFilter() => isFilterOpen = !isFilterOpen;
     private void SelectSort(string option)
