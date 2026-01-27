@@ -5,7 +5,7 @@
 <div class="container-fluid p-4">
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-4 gap-3">
         <div>
-            <h2 class="fw-bold text-primary mb-0">Kaderverwaltung</h2>
+            <h2 class="fw-bold text-primary mb-0">Jugendverwaltung</h2>
             <p class="text-muted small mb-0">Alle Spieler im Überblick</p>
         </div>
         <button class="btn btn-primary rounded-pill px-4 shadow-sm fw-bold" @onclick="() => OpenEditor(null)">
@@ -26,19 +26,42 @@
                             placeholder="Suche nach Namen..." @bind="SearchTerm" @bind:event="oninput" />
                     </div>
                 </div>
-                <div class="col-md-4">
-                    <div class="input-group">
-                        <span class="input-group-text bg-white border text-muted rounded-start-3 ms-md-auto">
-                            <i class="bi bi-filter"></i>
+
+                <div class="col-md-4 text-end position-relative">
+                    <button
+                        class="btn btn-white border w-100 d-flex justify-content-between align-items-center rounded-3 shadow-sm px-3 bg-white"
+                        @onclick="ToggleFilter" style="height: 45px;">
+                        <span class="fw-bold text-muted small">
+                            <i class="bi bi-sort-down me-2 text-primary"></i>@GetSortLabel(SortOption)
                         </span>
-                        <select class="form-select border-start-0 ps-0 rounded-end-3 text-muted fw-bold" @bind="SortOption"
-                            style="cursor:pointer;">
-                            <option value="name_asc">A-Z (Nachname)</option>
-                            <option value="name_desc">Z-A (Nachname)</option>
-                            <option value="age_asc">Jüngste zuerst</option>
-                            <option value="age_desc">Älteste zuerst</option>
-                        </select>
-                    </div>
+                        <i
+                            class="bi bi-chevron-down small text-muted transition-transform @(isFilterOpen ? "rotate-180" : "")"></i>
+                    </button>
+
+                    @if (isFilterOpen)
+                    {
+                        <div class="position-fixed top-0 start-0 w-100 h-100" style="z-index: 1000;" @onclick="ToggleFilter">
+                        </div>
+
+                        <ul class="dropdown-menu show border-0 shadow-lg rounded-3 w-100 mt-2 p-2 animate-slide-in"
+                            style="z-index: 1001; backdrop-filter: blur(10px); background: rgba(255,255,255,0.95);">
+                            <li>
+                                <h6 class="dropdown-header text-uppercase small fw-bold text-muted">Sortierung</h6>
+                            </li>
+                            <li><button class="dropdown-item rounded-2 mb-1 @(SortOption == "name_asc" ? "active fw-bold" : "")"
+                                    @onclick='() => SelectSort("name_asc")'>A-Z (Nachname)</button></li>
+                            <li><button
+                                    class="dropdown-item rounded-2 mb-1 @(SortOption == "name_desc" ? "active fw-bold" : "")"
+                                    @onclick='() => SelectSort("name_desc")'>Z-A (Nachname)</button></li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li><button class="dropdown-item rounded-2 mb-1 @(SortOption == "age_asc" ? "active fw-bold" : "")"
+                                    @onclick='() => SelectSort("age_asc")'>Jüngste zuerst</button></li>
+                            <li><button class="dropdown-item rounded-2 mb-1 @(SortOption == "age_desc" ? "active fw-bold" : "")"
+                                    @onclick='() => SelectSort("age_desc")'>Älteste zuerst</button></li>
+                        </ul>
+                    }
                 </div>
             </div>
         </div>
@@ -94,6 +117,33 @@
         </div>
     }
 </div>
+
+<style>
+    .rotate-180 {
+        transform: rotate(180deg);
+    }
+
+    .transition-transform {
+        transition: transform 0.2s ease;
+    }
+
+    .animate-slide-in {
+        animation: slideDown 0.2s ease-out forwards;
+        transform-origin: top center;
+    }
+
+    @@keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-10px) scale(0.98);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+</style>
 
 @if (ShowEditor)
 {
@@ -165,7 +215,16 @@
 
 @code {
     private string SearchTerm = "";
-    private string SortOption = "name_asc"; // Default
+    private string SortOption = "name_asc";
+
+    // FIX: Eigene Variable für Dropdown-Status
+    private bool isFilterOpen = false;
+    private void ToggleFilter() => isFilterOpen = !isFilterOpen;
+    private void SelectSort(string option)
+    {
+        SortOption = option;
+        isFilterOpen = false;
+    }
 
     private bool ShowEditor = false;
     private MemberDto EditModel = new();
@@ -188,17 +247,24 @@
         if (!string.IsNullOrWhiteSpace(SearchTerm))
             query = query.Where(m => m.FullName.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase));
 
-        // Sortierlogik
         query = SortOption switch
         {
             "name_desc" => query.OrderByDescending(m => m.LastName).ThenByDescending(m => m.FirstName),
-            "age_asc" => query.OrderByDescending(m => m.BirthDate), // Jüngste = späteres Datum
-            "age_desc" => query.OrderBy(m => m.BirthDate), // Älteste = früheres Datum
-            _ => query.OrderBy(m => m.LastName).ThenBy(m => m.FirstName) // name_asc
+            "age_asc" => query.OrderByDescending(m => m.BirthDate),
+            "age_desc" => query.OrderBy(m => m.BirthDate),
+            _ => query.OrderBy(m => m.LastName).ThenBy(m => m.FirstName)
         };
 
         return query;
     }
+
+    private string GetSortLabel(string option) => option switch
+    {
+        "name_desc" => "Z-A (Nachname)",
+        "age_asc" => "Jüngste zuerst",
+        "age_desc" => "Älteste zuerst",
+        _ => "A-Z (Nachname)"
+    };
 
     private void OpenEditor(MemberDto? member)
     {
@@ -238,12 +304,9 @@
     private async Task SaveMember()
     {
         if (string.IsNullOrWhiteSpace(EditModel.LastName)) return;
-
         EditModel.BirthDateString = TempDate.HasValue ? TempDate.Value.ToString("dd.MM.yyyy") : "";
-
         if (EditModel.MemberId == 0) await Service.AddMemberAsync(EditModel);
         else await Service.UpdateMemberAsync(EditModel);
-
         CloseEditor();
     }
 
@@ -254,7 +317,7 @@
         if (MemberToDelete != null)
         {
             await
-    Service.DeleteMemberAsync(MemberToDelete.MemberId); ShowDeleteConfirm = false;
+            Service.DeleteMemberAsync(MemberToDelete.MemberId); ShowDeleteConfirm = false;
         }
     }
 }

@@ -5,24 +5,52 @@
 @inject IJSRuntime JS
 
 <div class="container-fluid pb-5 p-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-4 gap-3">
         <div>
             <h2 class="fw-bold text-primary mb-0">Statistiken</h2>
-            <p class="text-muted small mb-0">Datenanalyse Saison 2025/26</p>
+            <p class="text-muted small mb-0">Datenanalyse & Trainingstrends</p>
         </div>
-        @if (Service.IsInitialized)
-        {
-            <button class="btn btn-primary btn-sm rounded-pill px-4 fw-bold shadow-sm" @onclick="ExportPdf">
-                <i class="bi bi-file-pdf-fill me-2"></i>PDF Report
-            </button>
-        }
+        
+        <div class="d-flex gap-2 align-items-center">
+            <div class="dropdown position-relative">
+                <button class="btn btn-white bg-white border rounded-pill shadow-sm fw-bold px-4 d-flex align-items-center" 
+                        @onclick="ToggleSeasonDropdown">
+                    <i class="bi bi-calendar-range me-2 text-primary"></i> Saison @SelectedSeason
+                    <i class="bi bi-chevron-down ms-2 small text-muted"></i>
+                </button>
+                
+                @if (isSeasonDropdownOpen)
+                {
+                    <div class="position-fixed top-0 start-0 w-100 h-100" style="z-index: 1000;" @onclick="ToggleSeasonDropdown"></div>
+                    <ul class="dropdown-menu show border-0 shadow-lg rounded-3 mt-2 p-2 animate-slide-in" 
+                        style="z-index: 1001; right: 0; left: auto; display: block;">
+                        @foreach(var s in AvailableSeasons)
+                        {
+                            <li>
+                                <button class="dropdown-item fw-bold rounded-2 mb-1 @(s==SelectedSeason?"active":"")" 
+                                        @onclick="() => ChangeSeason(s)">
+                                    Saison @s
+                                </button>
+                            </li>
+                        }
+                    </ul>
+                }
+            </div>
+
+            @if (Service.IsInitialized)
+            {
+                <button class="btn btn-primary rounded-circle shadow-sm" style="width: 40px; height: 40px;" @onclick="ExportPdf" title="Als PDF speichern">
+                    <i class="bi bi-file-earmark-pdf-fill"></i>
+                </button>
+            }
+        </div>
     </div>
 
     @if (!Service.IsInitialized)
     {
-        <div class="d-flex justify-content-center py-5">
-            <div class="spinner-border text-primary"></div>
-        </div>
+         <div class="d-flex justify-content-center py-5">
+             <div class="spinner-border text-primary"></div>
+         </div>
     }
     else
     {
@@ -34,22 +62,22 @@
                         <canvas id="ageChart"></canvas>
                     </div>
                     <div class="mt-4 d-flex justify-content-center gap-3">
-                        <div class="text-center">
-                            <h4 class="mb-0 fw-bold">@Service.YouthMembers.Count</h4>
-                            <small class="text-muted">Kader</small>
-                        </div>
-                        <div class="vr"></div>
-                        <div class="text-center">
-                            <h4 class="mb-0 fw-bold">@GetActiveMembersCount()</h4>
-                            <small class="text-muted">Aktiv (3M)</small>
-                        </div>
+                         <div class="text-center">
+                              <h4 class="mb-0 fw-bold">@Service.YouthMembers.Count</h4>
+                              <small class="text-muted">Kader</small>
+                         </div>
+                         <div class="vr"></div>
+                         <div class="text-center">
+                             <h4 class="mb-0 fw-bold">@GetActiveMembersCount()</h4>
+                             <small class="text-muted">Aktiv (letzte 3 Mon.)</small>
+                         </div>
                     </div>
                 </div>
             </div>
 
             <div class="col-lg-8 col-md-6">
                 <div class="glass-card p-4 h-100">
-                    <h6 class="text-uppercase text-muted fw-bold small mb-4">Trainingstrend (12 Monate)</h6>
+                    <h6 class="text-uppercase text-muted fw-bold small mb-4">Trainingstrend (@SelectedSeason)</h6>
                     <div style="height: 220px; position: relative;">
                         <canvas id="monthChart"></canvas>
                     </div>
@@ -62,9 +90,9 @@
                 <div class="glass-card h-100 border-0 overflow-hidden">
                     <div class="p-3 border-bottom bg-white d-flex align-items-center justify-content-between">
                         <h6 class="fw-bold text-primary mb-0"><i class="bi bi-trophy-fill me-2"></i>Top Trainingsfleiß</h6>
-                        <span class="badge bg-light text-dark border">Gesamt</span>
+                        <span class="badge bg-light text-dark border">@SelectedSeason</span>
                     </div>
-
+                    
                     <div class="table-responsive" style="max-height: 500px; overflow-y: auto;">
                         <table class="table table-hover align-middle mb-0">
                             <thead class="bg-light sticky-top" style="z-index: 5;">
@@ -77,66 +105,47 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @{
-                                    // FIX: Dichtes Ranking (1, 1, 2, 3...)
+                                @{ 
                                     var statsList = GetFullAttendanceList().ToList();
                                     int denseRank = 0;
                                     int lastCount = -1;
                                 }
                                 @foreach (var stat in statsList)
                                 {
-                                    // Wenn sich die Anzahl ändert, nächster Rang. Sonst gleicher Rang.
                                     if (stat.Count != lastCount)
                                     {
                                         denseRank++;
                                         lastCount = stat.Count;
                                     }
-
+                                    
                                     <tr>
                                         <td class="ps-4 fw-bold text-center" style="width:80px;">
-                                            @if (denseRank == 1)
-                                            {
-                                                <span class="fs-4">🥇</span>
-                                            }
-                                            else if (denseRank == 2)
-                                            {
-
-                                                <span class="fs-4">🥈</span>
-                                            }
-                                            else if (denseRank == 3)
-                                            {
-
-                                                <span class="fs-4">🥉</span>
-                                            }
-                                            else
-                                            {
-
-                                                <span
-                                                    class="text-muted bg-light rounded px-2 py-1 border small">@denseRank.</span>
-                                            }
+                                            @if(denseRank == 1) { <span class="fs-4">🥇</span> }
+                                            else if(denseRank == 2) { <span class="fs-4">🥈</span> }
+                                            else if(denseRank == 3) { <span class="fs-4">🥉</span> }
+                                            else { <span class="text-muted bg-light rounded px-2 py-1 border small">@denseRank.</span> }
                                         </td>
                                         <td>
                                             <div class="fw-bold text-dark">@stat.Name</div>
                                         </td>
-                                        <td><span
-                                                class="badge rounded-pill @stat.Color border border-white">@stat.Category</span>
-                                        </td>
+                                        <td><span class="badge rounded-pill @stat.Color border border-white">@stat.Category</span></td>
                                         <td class="text-center">
                                             <span class="fw-bold text-primary fs-5">@stat.Count</span>
                                         </td>
                                         <td class="text-end pe-4">
                                             <div class="d-flex align-items-center justify-content-end gap-2">
-                                                <div class="progress flex-grow-1"
-                                                    style="height: 6px; width: 80px; border-radius: 10px; background-color: #e9ecef;">
-                                                    <div class="progress-bar" role="progressbar"
-                                                        style="width: @(stat.Percentage.ToString("0.0", CultureInfo.InvariantCulture))%; background-color: var(--primary);">
-                                                    </div>
+                                                <div class="progress flex-grow-1" style="height: 6px; width: 80px; border-radius: 10px; background-color: #e9ecef;">
+                                                    <div class="progress-bar" role="progressbar" 
+                                                         style="width: @(stat.Percentage.ToString("0.0", CultureInfo.InvariantCulture))%; background-color: var(--primary);"></div>
                                                 </div>
-                                                <small
-                                                    class="fw-bold text-muted w-25 text-end">@(Math.Round(stat.Percentage))%</small>
+                                                <small class="fw-bold text-muted w-25 text-end">@(Math.Round(stat.Percentage))%</small>
                                             </div>
                                         </td>
                                     </tr>
+                                }
+                                @if(!statsList.Any())
+                                {
+                                    <tr><td colspan="5" class="text-center py-4 text-muted">Keine Trainingsdaten in dieser Saison.</td></tr>
                                 }
                             </tbody>
                         </table>
@@ -147,34 +156,40 @@
             <div class="col-lg-4">
                 <h6 class="text-uppercase text-muted fw-bold small mb-3 ps-1">Letzte Einheiten</h6>
                 <div class="d-flex flex-column gap-3">
-                    @foreach (var day in GetLastTrainings())
-                    {
-                        // FIX: Rahmen entfernt, Design feiner
-                        <div class="glass-card p-3 d-flex align-items-center transition-hover">
-                            <div class="me-3 text-center rounded-3 bg-light border d-flex flex-column justify-content-center"
-                                style="width: 50px; height: 50px;">
-                                <span class="d-block small text-uppercase fw-bold text-muted lh-1"
-                                    style="font-size: 0.6rem;">@day.Date.ToString("MMM")</span>
-                                <span class="d-block fs-5 fw-bold text-primary lh-1">@day.Date.Day</span>
-                            </div>
-                            <div class="flex-grow-1 ps-2">
-                                <h6 class="fw-bold mb-0 text-dark">Training</h6>
-                                <small class="text-muted">@day.Date.ToString("dddd, d. MMMM")</small>
-                            </div>
-                            <div class="text-end">
-                                <span class="badge bg-primary bg-gradient rounded-pill">@day.Count</span>
-                            </div>
-                        </div>
-                    }
+                     @foreach(var day in GetLastTrainings())
+                     {
+                         <div class="glass-card p-3 d-flex align-items-center transition-hover">
+                             <div class="me-3 text-center rounded-3 bg-light border d-flex flex-column justify-content-center" style="width: 50px; height: 50px;">
+                                 <span class="d-block small text-uppercase fw-bold text-muted lh-1" style="font-size: 0.6rem;">@day.Date.ToString("MMM")</span>
+                                 <span class="d-block fs-5 fw-bold text-primary lh-1">@day.Date.Day</span>
+                             </div>
+                             <div class="flex-grow-1 ps-2">
+                                 <h6 class="fw-bold mb-0 text-dark">Training</h6>
+                                 <small class="text-muted">@day.Date.ToString("dddd, d. MMMM")</small>
+                             </div>
+                             <div class="text-end">
+                                 <span class="badge bg-primary bg-gradient rounded-pill">@day.Count</span>
+                             </div>
+                         </div>
+                     }
                 </div>
             </div>
         </div>
     }
 </div>
 
+<style>
+    .animate-slide-in { animation: slideDown 0.2s ease-out forwards; transform-origin: top center; }
+    @@keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+</style>
+
 @code {
-    // Methoden bleiben wie gehabt (GetActiveMembersCount, RenderCharts etc.)
-    // ...
+    private string SelectedSeason = "2025/26";
+    private List<string> AvailableSeasons = new();
+    
+    // Blazor Dropdown Logic
+    private bool isSeasonDropdownOpen = false;
+    private void ToggleSeasonDropdown() => isSeasonDropdownOpen = !isSeasonDropdownOpen;
 
     private int GetActiveMembersCount()
     {
@@ -187,102 +202,111 @@
     {
         Service.OnChange += StateHasChanged;
         await Service.InitializeAsync();
+        CalculateAvailableSeasons();
     }
+    
     public void Dispose() => Service.OnChange -= StateHasChanged;
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    
+    protected override async Task OnAfterRenderAsync(bool firstRender) { 
+        if (Service.IsInitialized) { await Task.Delay(100); await RenderCharts(); } 
+    }
+
+    private void CalculateAvailableSeasons()
     {
-        if (Service.IsInitialized)
-        {
-            await Task.Delay(100);
-            await RenderCharts();
-        }
+        var years = Service.Presences.Select(p => GetSeasonName(p.ParsedDate)).Distinct().ToList();
+        var current = GetSeasonName(DateTime.Today);
+        if (!years.Contains(current)) years.Add(current);
+        AvailableSeasons = years.OrderByDescending(x => x).ToList();
+        
+        if (!AvailableSeasons.Contains(SelectedSeason)) 
+            SelectedSeason = AvailableSeasons.FirstOrDefault() ?? current;
+    }
+
+    private string GetSeasonName(DateTime date)
+    {
+        // Saisonwechsel 1. September
+        int startYear = (date.Month >= 9) ? date.Year : date.Year - 1;
+        return $"{startYear}/{ (startYear + 1).ToString().Substring(2) }"; 
+    }
+
+    private async Task ChangeSeason(string season)
+    {
+        SelectedSeason = season;
+        isSeasonDropdownOpen = false;
+        await RenderCharts(); 
+    }
+
+    private IEnumerable<PresenceDto> GetFilteredPresences()
+    {
+        return Service.Presences.Where(p => GetSeasonName(p.ParsedDate) == SelectedSeason);
     }
 
     private IEnumerable<(string Name, string Category, string Color, int Count, double Percentage)> GetFullAttendanceList()
     {
-        int totalTrainings = Service.Presences.Select(p => p.ParsedDate.Date).Distinct().Count();
+        var filteredPresences = GetFilteredPresences().ToList(); 
+        int totalTrainings = filteredPresences.Select(p => p.ParsedDate.Date).Distinct().Count();
         if (totalTrainings == 0) totalTrainings = 1;
+        
         return Service.YouthMembers
-        .Select(m =>
-        {
-            int count = Service.Presences.Count(p => p.MemberId == m.MemberId);
-            return new { Member = m, Count = count, Percentage = (double)count / totalTrainings * 100 };
-        })
-        .OrderByDescending(x => x.Count)
-        .ThenBy(x => x.Member.LastName)
-        .Select(x => (x.Member.FullName, x.Member.AgeCategory, x.Member.CategoryColor, x.Count, x.Percentage));
+            .Select(m => { 
+                int count = filteredPresences.Count(p => p.MemberId == m.MemberId); 
+                return new { Member = m, Count = count, Percentage = (double)count / totalTrainings * 100 }; 
+            })
+            .Where(x => x.Count > 0) // Nur Leute anzeigen die in DIESER Saison da waren?
+            .OrderByDescending(x => x.Count)
+            .ThenBy(x => x.Member.LastName)
+            .Select(x => (x.Member.FullName, x.Member.AgeCategory, x.Member.CategoryColor, x.Count, x.Percentage));
     }
 
     private IEnumerable<(DateTime Date, int Count)> GetLastTrainings()
     {
-        return Service.Presences.GroupBy(p => p.ParsedDate.Date).OrderByDescending(g => g.Key).Take(5).Select(g => (g.Key,
-        g.Count()));
+        return GetFilteredPresences()
+            .GroupBy(p => p.ParsedDate.Date)
+            .OrderByDescending(g => g.Key)
+            .Take(5)
+            .Select(g => (g.Key, g.Count()));
     }
 
     private async Task ExportPdf()
     {
         var list = GetFullAttendanceList().ToList();
-        if (!list.Any()) return;
+        if(!list.Any()) return;
 
-        // PDF Logik auch auf neues Ranking anpassen
         var data = new List<string[]>();
         int denseRank = 0;
         int lastCount = -1;
 
-        foreach (var x in list)
+        foreach(var x in list)
         {
             if (x.Count != lastCount) { denseRank++; lastCount = x.Count; }
-            data.Add(new string[] { denseRank.ToString() + ".", x.Name, x.Category, x.Count.ToString(), Math.Round(x.Percentage) +
-"%" });
+            data.Add(new string[] { denseRank.ToString() + ".", x.Name, x.Category, x.Count.ToString(), Math.Round(x.Percentage) + "%" });
         }
 
         var headers = new string[] { "Rang", "Name", "Kategorie", "Trainings", "Quote" };
-        await JS.InvokeVoidAsync("generatePdf", "Trainingsstatistik 2025/26", headers, data);
+        await JS.InvokeVoidAsync("generatePdf", $"Statistik Saison {SelectedSeason}", headers, data);
     }
 
     private async Task RenderCharts()
     {
-        var categories = Service.YouthMembers.GroupBy(m => m.AgeCategory).OrderBy(g => g.Key.Length).ThenBy(g =>
-        g.Key).ToList();
-        var ageDataset = new[] { new { data = categories.Select(g => g.Count()).ToArray(), backgroundColor = new[] { "#198754",
-"#0dcaf0", "#0d6efd", "#ffc107", "#dc3545", "#212529", "#6c757d" }, borderWidth = 0 } };
+        var filteredPresences = GetFilteredPresences().ToList();
+
+        var categories = Service.YouthMembers.GroupBy(m => m.AgeCategory).OrderBy(g => g.Key.Length).ThenBy(g => g.Key).ToList();
+        var ageDataset = new[] { new { data = categories.Select(g => g.Count()).ToArray(), backgroundColor = new[] { "#198754", "#0dcaf0", "#0d6efd", "#ffc107", "#dc3545", "#212529", "#6c757d" }, borderWidth = 0 } };
         var ageData = new { labels = categories.Select(g => g.Key).ToArray(), datasets = ageDataset };
-        var ageOptions = new
-        {
-            plugins = new { legend = new { position = "right" } },
-            cutout = "70%",
-            maintainAspectRatio =
-        false
-        };
+        var ageOptions = new { plugins = new { legend = new { position = "right" } }, cutout = "70%", maintainAspectRatio = false };
         var ageConfig = new { type = "doughnut", data = ageData, options = ageOptions };
-        var months = Service.Presences.Where(p => p.ParsedDate > DateTime.Today.AddMonths(-12)).GroupBy(p => new
-        {
-            p.ParsedDate.Year,
-            p.ParsedDate.Month
-        }).OrderBy(g => g.Key.Year).ThenBy(g => g.Key.Month).ToList();
-        var monthDataset = new[] { new { label = "Teilnehmer", data = months.Select(g => g.Count()).ToArray(), backgroundColor =
-"#052767", borderRadius = 4, barThickness = 20 } };
+        
+        var months = filteredPresences
+            .GroupBy(p => new { p.ParsedDate.Year, p.ParsedDate.Month })
+            .OrderBy(g => g.Key.Year).ThenBy(g => g.Key.Month)
+            .ToList();
+            
+        var monthDataset = new[] { new { label = "Teilnehmer", data = months.Select(g => g.Count()).ToArray(), backgroundColor = "#052767", borderRadius = 4, barThickness = 20 } };
         var monthData = new { labels = months.Select(g => $"{g.Key.Month}/{g.Key.Year}").ToArray(), datasets = monthDataset };
-        var monthScales = new
-        {
-            y = new { beginAtZero = true, grid = new { display = false } },
-            x = new
-            {
-                grid = new
-                {
-                    display =
-        false
-                }
-            }
-        };
-        var monthOptions = new
-        {
-            maintainAspectRatio = false,
-            plugins = new { legend = new { display = false } },
-            scales =
-        monthScales
-        };
+        var monthScales = new { y = new { beginAtZero = true, grid = new { display = false } }, x = new { grid = new { display = false } } };
+        var monthOptions = new { maintainAspectRatio = false, plugins = new { legend = new { display = false } }, scales = monthScales };
         var monthConfig = new { type = "bar", data = monthData, options = monthOptions };
+        
         await JS.InvokeVoidAsync("setupChart", "ageChart", ageConfig);
         await JS.InvokeVoidAsync("setupChart", "monthChart", monthConfig);
     }
