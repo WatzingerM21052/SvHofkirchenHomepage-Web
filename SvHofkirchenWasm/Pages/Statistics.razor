@@ -12,17 +12,17 @@
         </div>
         @if (Service.IsInitialized)
         {
-            <button class="btn btn-outline-danger btn-sm rounded-pill px-3 fw-bold transition-hover" @onclick="ExportPdf">
-                <i class="bi bi-file-earmark-pdf me-1"></i> PDF Report
+            <button class="btn btn-primary btn-sm rounded-pill px-4 fw-bold shadow-sm" @onclick="ExportPdf">
+                <i class="bi bi-file-pdf-fill me-2"></i>PDF Report
             </button>
         }
     </div>
 
     @if (!Service.IsInitialized)
     {
-         <div class="d-flex justify-content-center py-5">
-             <div class="spinner-border text-primary"></div>
-         </div>
+        <div class="d-flex justify-content-center py-5">
+            <div class="spinner-border text-primary"></div>
+        </div>
     }
     else
     {
@@ -34,15 +34,15 @@
                         <canvas id="ageChart"></canvas>
                     </div>
                     <div class="mt-4 d-flex justify-content-center gap-3">
-                         <div class="text-center">
-                             <h4 class="mb-0 fw-bold">@Service.YouthMembers.Count</h4>
-                             <small class="text-muted">Kader</small>
-                         </div>
-                         <div class="vr"></div>
-                         <div class="text-center">
-                             <h4 class="mb-0 fw-bold">@GetActiveMembersCount()</h4>
-                             <small class="text-muted">Aktiv</small>
-                         </div>
+                        <div class="text-center">
+                            <h4 class="mb-0 fw-bold">@Service.YouthMembers.Count</h4>
+                            <small class="text-muted">Kader</small>
+                        </div>
+                        <div class="vr"></div>
+                        <div class="text-center">
+                            <h4 class="mb-0 fw-bold">@GetActiveMembersCount()</h4>
+                            <small class="text-muted">Aktiv (3M)</small>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -64,12 +64,12 @@
                         <h6 class="fw-bold text-primary mb-0"><i class="bi bi-trophy-fill me-2"></i>Top Trainingsfleiß</h6>
                         <span class="badge bg-light text-dark border">Gesamt</span>
                     </div>
-                    
+
                     <div class="table-responsive" style="max-height: 500px; overflow-y: auto;">
                         <table class="table table-hover align-middle mb-0">
                             <thead class="bg-light sticky-top" style="z-index: 5;">
                                 <tr>
-                                    <th class="ps-4">Rang</th>
+                                    <th class="ps-4 text-center">Rang</th>
                                     <th>Name</th>
                                     <th>Kat.</th>
                                     <th class="text-center">Trainings</th>
@@ -77,34 +77,66 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @{ var rank = 1; }
-                                @foreach (var stat in GetFullAttendanceList())
+                                @{
+                                    // FIX: Dichtes Ranking (1, 1, 2, 3...)
+                                    var statsList = GetFullAttendanceList().ToList();
+                                    int denseRank = 0;
+                                    int lastCount = -1;
+                                }
+                                @foreach (var stat in statsList)
                                 {
+                                    // Wenn sich die Anzahl ändert, nächster Rang. Sonst gleicher Rang.
+                                    if (stat.Count != lastCount)
+                                    {
+                                        denseRank++;
+                                        lastCount = stat.Count;
+                                    }
+
                                     <tr>
-                                        <td class="ps-4 fw-bold" style="width:60px;">
-                                            @if(rank == 1) { <span class="fs-4">🥇</span> }
-                                            else if(rank == 2) { <span class="fs-4">🥈</span> }
-                                            else if(rank == 3) { <span class="fs-4">🥉</span> }
-                                            else { <span class="text-muted">#@rank</span> }
+                                        <td class="ps-4 fw-bold text-center" style="width:80px;">
+                                            @if (denseRank == 1)
+                                            {
+                                                <span class="fs-4">🥇</span>
+                                            }
+                                            else if (denseRank == 2)
+                                            {
+
+                                                <span class="fs-4">🥈</span>
+                                            }
+                                            else if (denseRank == 3)
+                                            {
+
+                                                <span class="fs-4">🥉</span>
+                                            }
+                                            else
+                                            {
+
+                                                <span
+                                                    class="text-muted bg-light rounded px-2 py-1 border small">@denseRank.</span>
+                                            }
                                         </td>
                                         <td>
                                             <div class="fw-bold text-dark">@stat.Name</div>
                                         </td>
-                                        <td><span class="badge rounded-pill @stat.Color border border-white">@stat.Category</span></td>
+                                        <td><span
+                                                class="badge rounded-pill @stat.Color border border-white">@stat.Category</span>
+                                        </td>
                                         <td class="text-center">
-                                            <span class="fw-bold text-primary">@stat.Count</span>
+                                            <span class="fw-bold text-primary fs-5">@stat.Count</span>
                                         </td>
                                         <td class="text-end pe-4">
                                             <div class="d-flex align-items-center justify-content-end gap-2">
-                                                <div class="progress flex-grow-1" style="height: 6px; width: 80px; border-radius: 10px;">
-                                                    <div class="progress-bar bg-gradient-primary" role="progressbar" 
-                                                         style="width: @(stat.Percentage.ToString("0.0", CultureInfo.InvariantCulture))%"></div>
+                                                <div class="progress flex-grow-1"
+                                                    style="height: 6px; width: 80px; border-radius: 10px; background-color: #e9ecef;">
+                                                    <div class="progress-bar" role="progressbar"
+                                                        style="width: @(stat.Percentage.ToString("0.0", CultureInfo.InvariantCulture))%; background-color: var(--primary);">
+                                                    </div>
                                                 </div>
-                                                <small class="fw-bold text-muted">@(Math.Round(stat.Percentage))%</small>
+                                                <small
+                                                    class="fw-bold text-muted w-25 text-end">@(Math.Round(stat.Percentage))%</small>
                                             </div>
                                         </td>
                                     </tr>
-                                    rank++;
                                 }
                             </tbody>
                         </table>
@@ -115,99 +147,142 @@
             <div class="col-lg-4">
                 <h6 class="text-uppercase text-muted fw-bold small mb-3 ps-1">Letzte Einheiten</h6>
                 <div class="d-flex flex-column gap-3">
-                     @foreach(var day in GetLastTrainings())
-                     {
-                         <div class="glass-card p-3 d-flex align-items-center transition-hover">
-                             <div class="bg-primary bg-gradient text-white p-3 rounded-3 me-3 d-flex flex-column align-items-center justify-content-center shadow-sm" style="width: 60px; height: 60px;">
-                                 <span class="small fw-bold text-uppercase" style="font-size: 0.65rem;">@day.Date.ToString("MMM")</span>
-                                 <span class="fs-4 fw-bold lh-1">@day.Date.Day</span>
-                             </div>
-                             <div class="flex-grow-1">
-                                 <h6 class="fw-bold mb-0 text-dark">Training</h6>
-                                 <small class="text-muted">@day.Date.ToString("dddd")</small>
-                             </div>
-                             <div class="text-end">
-                                 <span class="badge bg-light text-primary border fs-6">@day.Count <i class="bi bi-person-fill"></i></span>
-                             </div>
-                         </div>
-                     }
-                     @if(!GetLastTrainings().Any())
-                     {
-                         <div class="alert alert-light border text-center text-muted">Keine Daten.</div>
-                     }
+                    @foreach (var day in GetLastTrainings())
+                    {
+                        // FIX: Rahmen entfernt, Design feiner
+                        <div class="glass-card p-3 d-flex align-items-center transition-hover">
+                            <div class="me-3 text-center rounded-3 bg-light border d-flex flex-column justify-content-center"
+                                style="width: 50px; height: 50px;">
+                                <span class="d-block small text-uppercase fw-bold text-muted lh-1"
+                                    style="font-size: 0.6rem;">@day.Date.ToString("MMM")</span>
+                                <span class="d-block fs-5 fw-bold text-primary lh-1">@day.Date.Day</span>
+                            </div>
+                            <div class="flex-grow-1 ps-2">
+                                <h6 class="fw-bold mb-0 text-dark">Training</h6>
+                                <small class="text-muted">@day.Date.ToString("dddd, d. MMMM")</small>
+                            </div>
+                            <div class="text-end">
+                                <span class="badge bg-primary bg-gradient rounded-pill">@day.Count</span>
+                            </div>
+                        </div>
+                    }
                 </div>
             </div>
         </div>
     }
 </div>
 
-<style>
-    /* Kleiner Custom Helper für Verlauf */
-    .bg-gradient-primary {
-        background: linear-gradient(90deg, var(--primary) 0%, #0d6efd 100%);
-    }
-    .btn-icon {
-        width: 32px; height: 32px; padding: 0; display: inline-flex; align-items: center; justify-content: center;
-    }
-    .btn-icon:hover { background-color: #e9ecef; }
-</style>
-
 @code {
-    // ... Code für Charts, PDF Export und Data Fetching bleibt exakt gleich wie in deinem vorigen Snippet ...
-    // ... (Kopiere die Methoden GetFullAttendanceList, GetLastTrainings, ExportPdf, RenderCharts hier rein) ...
-    // Ich füge nur die fehlende Methode hinzu:
-    
+    // Methoden bleiben wie gehabt (GetActiveMembersCount, RenderCharts etc.)
+    // ...
+
     private int GetActiveMembersCount()
     {
-        // Als "Aktiv" zählt, wer in den letzten 3 Monaten da war
         var threeMonthsAgo = DateTime.Today.AddMonths(-3);
         var activeIds = Service.Presences.Where(p => p.ParsedDate >= threeMonthsAgo).Select(p => p.MemberId).Distinct();
         return activeIds.Count();
     }
-    
-    // --- HIER DEINE VORHERIGEN METHODEN EINFÜGEN ---
-     protected override async Task OnInitializedAsync()
+
+    protected override async Task OnInitializedAsync()
     {
         Service.OnChange += StateHasChanged;
         await Service.InitializeAsync();
     }
     public void Dispose() => Service.OnChange -= StateHasChanged;
-    protected override async Task OnAfterRenderAsync(bool firstRender) { if (Service.IsInitialized) { await Task.Delay(100); await RenderCharts(); } }
-    
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (Service.IsInitialized)
+        {
+            await Task.Delay(100);
+            await RenderCharts();
+        }
+    }
+
     private IEnumerable<(string Name, string Category, string Color, int Count, double Percentage)> GetFullAttendanceList()
     {
         int totalTrainings = Service.Presences.Select(p => p.ParsedDate.Date).Distinct().Count();
         if (totalTrainings == 0) totalTrainings = 1;
-        return Service.YouthMembers.Select(m => { int count = Service.Presences.Count(p => p.MemberId == m.MemberId); return new { Member = m, Count = count, Percentage = (double)count / totalTrainings * 100 }; }).OrderByDescending(x => x.Count).ThenBy(x => x.Member.LastName).Select(x => (x.Member.FullName, x.Member.AgeCategory, x.Member.CategoryColor, x.Count, x.Percentage));
+        return Service.YouthMembers
+        .Select(m =>
+        {
+            int count = Service.Presences.Count(p => p.MemberId == m.MemberId);
+            return new { Member = m, Count = count, Percentage = (double)count / totalTrainings * 100 };
+        })
+        .OrderByDescending(x => x.Count)
+        .ThenBy(x => x.Member.LastName)
+        .Select(x => (x.Member.FullName, x.Member.AgeCategory, x.Member.CategoryColor, x.Count, x.Percentage));
     }
+
     private IEnumerable<(DateTime Date, int Count)> GetLastTrainings()
     {
-        return Service.Presences.GroupBy(p => p.ParsedDate.Date).OrderByDescending(g => g.Key).Take(5).Select(g => (g.Key, g.Count()));
+        return Service.Presences.GroupBy(p => p.ParsedDate.Date).OrderByDescending(g => g.Key).Take(5).Select(g => (g.Key,
+        g.Count()));
     }
+
     private async Task ExportPdf()
     {
-        var list = GetFullAttendanceList().ToList(); if(!list.Any()) return;
-        var data = list.Select(x => new string[] { x.Name, x.Category, x.Count.ToString(), Math.Round(x.Percentage) + "%" }).ToList();
-        var headers = new string[] { "Name", "Kategorie", "Anzahl", "Quote" };
-        await JS.InvokeVoidAsync("generatePdf", "Trainingsstatistik", headers, data);
+        var list = GetFullAttendanceList().ToList();
+        if (!list.Any()) return;
+
+        // PDF Logik auch auf neues Ranking anpassen
+        var data = new List<string[]>();
+        int denseRank = 0;
+        int lastCount = -1;
+
+        foreach (var x in list)
+        {
+            if (x.Count != lastCount) { denseRank++; lastCount = x.Count; }
+            data.Add(new string[] { denseRank.ToString() + ".", x.Name, x.Category, x.Count.ToString(), Math.Round(x.Percentage) +
+"%" });
+        }
+
+        var headers = new string[] { "Rang", "Name", "Kategorie", "Trainings", "Quote" };
+        await JS.InvokeVoidAsync("generatePdf", "Trainingsstatistik 2025/26", headers, data);
     }
+
     private async Task RenderCharts()
     {
-        var categories = Service.YouthMembers.GroupBy(m => m.AgeCategory).OrderBy(g => g.Key.Length).ThenBy(g => g.Key).ToList();
-        
-        var ageDataset = new[] { new { data = categories.Select(g => g.Count()).ToArray(), backgroundColor = new[] { "#198754", "#0dcaf0", "#0d6efd", "#ffc107", "#dc3545", "#212529", "#6c757d" }, borderWidth = 0 } };
+        var categories = Service.YouthMembers.GroupBy(m => m.AgeCategory).OrderBy(g => g.Key.Length).ThenBy(g =>
+        g.Key).ToList();
+        var ageDataset = new[] { new { data = categories.Select(g => g.Count()).ToArray(), backgroundColor = new[] { "#198754",
+"#0dcaf0", "#0d6efd", "#ffc107", "#dc3545", "#212529", "#6c757d" }, borderWidth = 0 } };
         var ageData = new { labels = categories.Select(g => g.Key).ToArray(), datasets = ageDataset };
-        var ageOptions = new { plugins = new { legend = new { position = "right" } }, cutout = "70%", maintainAspectRatio = false };
+        var ageOptions = new
+        {
+            plugins = new { legend = new { position = "right" } },
+            cutout = "70%",
+            maintainAspectRatio =
+        false
+        };
         var ageConfig = new { type = "doughnut", data = ageData, options = ageOptions };
-        
-        var months = Service.Presences.Where(p => p.ParsedDate > DateTime.Today.AddMonths(-12)).GroupBy(p => new { p.ParsedDate.Year, p.ParsedDate.Month }).OrderBy(g => g.Key.Year).ThenBy(g => g.Key.Month).ToList();
-        
-        var monthDataset = new[] { new { label = "Teilnehmer", data = months.Select(g => g.Count()).ToArray(), backgroundColor = "#052767", borderRadius = 4, barThickness = 20 } };
+        var months = Service.Presences.Where(p => p.ParsedDate > DateTime.Today.AddMonths(-12)).GroupBy(p => new
+        {
+            p.ParsedDate.Year,
+            p.ParsedDate.Month
+        }).OrderBy(g => g.Key.Year).ThenBy(g => g.Key.Month).ToList();
+        var monthDataset = new[] { new { label = "Teilnehmer", data = months.Select(g => g.Count()).ToArray(), backgroundColor =
+"#052767", borderRadius = 4, barThickness = 20 } };
         var monthData = new { labels = months.Select(g => $"{g.Key.Month}/{g.Key.Year}").ToArray(), datasets = monthDataset };
-        var monthScales = new { y = new { beginAtZero = true, grid = new { display = false } }, x = new { grid = new { display = false } } };
-        var monthOptions = new { maintainAspectRatio = false, plugins = new { legend = new { display = false } }, scales = monthScales };
+        var monthScales = new
+        {
+            y = new { beginAtZero = true, grid = new { display = false } },
+            x = new
+            {
+                grid = new
+                {
+                    display =
+        false
+                }
+            }
+        };
+        var monthOptions = new
+        {
+            maintainAspectRatio = false,
+            plugins = new { legend = new { display = false } },
+            scales =
+        monthScales
+        };
         var monthConfig = new { type = "bar", data = monthData, options = monthOptions };
-        
         await JS.InvokeVoidAsync("setupChart", "ageChart", ageConfig);
         await JS.InvokeVoidAsync("setupChart", "monthChart", monthConfig);
     }

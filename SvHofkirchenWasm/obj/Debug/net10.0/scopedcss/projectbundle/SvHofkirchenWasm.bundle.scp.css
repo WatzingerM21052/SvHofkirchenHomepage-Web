@@ -29,10 +29,14 @@ main[b-k3a4psud08] {
 }
 
 .footer[b-k3a4psud08] {
-    text-align: center;
-    padding: 20px;
-    margin-top: 40px;
-    background: #eee;
+    background: #fff;
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
+    margin-top: auto;
+    /* Wichtig für Sticky Footer */
+}
+
+.hover-primary:hover[b-k3a4psud08] {
+    color: #052767 !important;
 }
 
 @media (min-width: 641px) {

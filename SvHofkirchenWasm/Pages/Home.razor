@@ -15,83 +15,150 @@
 else
 {
     <div class="container-fluid p-4">
-        <div class="dashboard-hero p-5 mb-5 shadow-lg">
-            <div class="row align-items-center position-relative" style="z-index: 2;">
-                <div class="col-lg-8">
-                    <span class="badge bg-warning text-dark mb-2 shadow-sm">Saison 2025/26</span>
-                    <h1 class="display-4 fw-bold mb-3">Sektion Schach Jugend</h1>
-                    <p class="lead mb-4 opacity-75">
-                        Willkommen zurück! Hier ist der Überblick über den aktuellen Trainingsbetrieb.
-                    </p>
-                    <div class="d-flex gap-3">
-                        <a href="attendance" class="btn btn-warning fw-bold px-4 py-2 rounded-pill shadow-sm">
-                            <i class="bi bi-play-fill me-1"></i> Training starten
-                        </a>
-                        <a href="youth-list" class="btn btn-outline-light px-4 py-2 rounded-pill">
-                            Spieler verwalten
-                        </a>
-                    </div>
+        <div
+            class="glass-card p-5 mb-4 position-relative overflow-hidden bg-primary bg-gradient text-white border-0 shadow-lg">
+            <div class="position-relative" style="z-index: 2;">
+                <span class="badge bg-white text-primary mb-2 shadow-sm fw-bold">Saison 2025/26</span>
+                <h1 class="display-5 fw-bold mb-2">Sektion Schach Jugend</h1>
+                <p class="lead opacity-75 mb-4" style="max-width: 600px;">
+                    Willkommen im Trainer-Dashboard. Hier ist der aktuelle Status.
+                </p>
+                <div class="d-flex gap-3 flex-wrap">
+                    <a href="attendance" class="btn btn-warning fw-bold px-4 rounded-pill shadow-sm text-dark">
+                        <i class="bi bi-calendar-check-fill me-2"></i>Anwesenheit
+                    </a>
+                    <a href="statistics" class="btn btn-outline-light px-4 rounded-pill fw-bold backdrop-blur">
+                        <i class="bi bi-graph-up me-2"></i>Statistik
+                    </a>
                 </div>
             </div>
-            <i class="bi bi-person-workspace position-absolute text-white" 
-               style="font-size: 20rem; opacity: 0.04; right: -5rem; top: -5rem; transform: rotate(-10deg);"></i>
+            <i class="bi bi-trophy-fill position-absolute text-white"
+                style="font-size: 20rem; opacity: 0.08; right: -4rem; bottom: -5rem; transform: rotate(-15deg);"></i>
         </div>
 
-        <div class="row g-4">
+        <div class="row g-4 mb-4">
             <div class="col-md-4">
                 <div class="glass-card p-4 h-100 position-relative overflow-hidden">
-                    <div class="d-flex justify-content-between align-items-start">
+                    <div class="d-flex justify-content-between">
                         <div>
-                            <p class="text-uppercase text-muted fw-bold small mb-1">Kadergröße</p>
+                            <p class="text-uppercase text-muted fw-bold small mb-1">Aktiver Kader</p>
                             <h2 class="display-5 fw-bold text-primary mb-0">@Service.YouthMembers.Count</h2>
                         </div>
-                        <div class="bg-primary bg-opacity-10 p-3 rounded-circle text-primary">
+                        <div class="icon-circle bg-primary bg-opacity-10 text-primary">
                             <i class="bi bi-people-fill fs-3"></i>
                         </div>
                     </div>
-                    <div class="mt-3">
-                         <span class="badge bg-light text-dark border">
-                             @Service.YouthMembers.Count(m => m.AgeCategory == "U8" || m.AgeCategory == "U10") Kids (U8/U10)
-                         </span>
-                    </div>
+                    @* <div class="mt-3">
+                        <span class="badge bg-light text-dark border me-1">@Service.YouthMembers.Count(m => m.Gender == "M")
+                            Jungs</span>
+                        <span class="badge bg-light text-dark border">@Service.YouthMembers.Count(m => m.Gender == "W")
+                            Mädchen</span>
+                    </div> *@
                 </div>
             </div>
 
             <div class="col-md-4">
                 <div class="glass-card p-4 h-100 position-relative overflow-hidden">
-                    <div class="d-flex justify-content-between align-items-start">
+                    <div class="d-flex justify-content-between">
                         <div>
-                            <p class="text-uppercase text-muted fw-bold small mb-1">Trainings Gesamt</p>
-                            <h2 class="display-5 fw-bold text-success mb-0">
-                                @Service.Presences.Select(p => p.ParsedDate.Date).Distinct().Count()
-                            </h2>
+                            <p class="text-uppercase text-muted fw-bold small mb-1">Nächstes Training</p>
+                            <h2 class="display-6 fw-bold text-dark mb-0">@GetNextTrainingDate()</h2>
                         </div>
-                        <div class="bg-success bg-opacity-10 p-3 rounded-circle text-success">
-                            <i class="bi bi-calendar-check-fill fs-3"></i>
-                        </div>
-                    </div>
-                    <div class="mt-3 text-muted small d-flex align-items-center gap-1">
-                        <i class="bi bi-clock-history"></i>
-                        <span>Erfasst seit: <strong>@GetFirstTrainingDate()</strong></span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-md-4">
-                <div class="glass-card p-4 h-100 position-relative overflow-hidden">
-                    <div class="d-flex justify-content-between align-items-start">
-                        <div>
-                            <p class="text-uppercase text-muted fw-bold small mb-1">Teilnahme Ø</p>
-                            <h2 class="display-5 fw-bold text-info mb-0">
-                                @CalculateAverageAttendance()
-                            </h2>
-                        </div>
-                        <div class="bg-info bg-opacity-10 p-3 rounded-circle text-info">
-                            <i class="bi bi-graph-up-arrow fs-3"></i>
+                        <div class="icon-circle bg-warning bg-opacity-10 text-warning text-dark">
+                            <i class="bi bi-clock-fill fs-3"></i>
                         </div>
                     </div>
                     <div class="mt-3 text-muted small">
-                        Spieler pro Trainingseinheit
+                        <i class="bi bi-geo-alt-fill me-1"></i> Vereinsheim
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="glass-card p-4 h-100 position-relative overflow-hidden">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <p class="text-uppercase text-muted fw-bold small mb-1">Beteiligung Ø</p>
+                            <h2 class="display-5 fw-bold text-success mb-0">@CalculateAverageAttendance()</h2>
+                        </div>
+                        <div class="icon-circle bg-success bg-opacity-10 text-success">
+                            <i class="bi bi-bar-chart-fill fs-3"></i>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <div class="progress" style="height: 5px;">
+                            <div class="progress-bar bg-success" style="width: 75%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-lg-8">
+                <div class="glass-card p-4 h-100">
+                    <h6 class="text-uppercase text-muted fw-bold small mb-3">Geburtstage (nächste 30 Tage)</h6>
+                    @{
+                        var birthdays = GetUpcomingBirthdays();
+                    }
+                    @if (birthdays.Any())
+                    {
+                        <div class="list-group list-group-flush">
+                            @foreach (var b in birthdays)
+                            {
+                                <div class="list-group-item border-0 d-flex align-items-center px-0 py-2">
+                                    <div class="bg-light rounded-circle d-flex align-items-center justify-content-center me-3 border"
+                                        style="width: 45px; height: 45px;">
+                                        <i class="bi bi-cake2-fill text-danger"></i>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <div class="fw-bold text-dark">@b.Member.FirstName @b.Member.LastName</div>
+                                        <small class="text-muted">wird @(b.Age) Jahre alt</small>
+                                    </div>
+                                    <div class="text-end">
+                                        <span class="badge bg-light text-dark border">@b.Date.ToString("dd.MM.")</span>
+                                        @if (b.Date.Date == DateTime.Today)
+                                        {
+                                            <span class="badge bg-danger ms-1">Heute!</span>
+                                        }
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-light border text-muted mb-0">
+                            <i class="bi bi-calendar-x me-2"></i>Keine Geburtstage in den nächsten 30 Tagen.
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="glass-card p-0 h-100 overflow-hidden bg-white">
+                    <div class="p-4 bg-light border-bottom">
+                        <h6 class="text-uppercase text-muted fw-bold small mb-0">Shortcuts</h6>
+                    </div>
+                    <div class="list-group list-group-flush">
+                        <a href="youth-list"
+                            class="list-group-item list-group-item-action p-3 border-bottom-0 d-flex align-items-center">
+                            <i class="bi bi-person-badge fs-4 me-3 text-primary"></i>
+                            <div>
+                                <div class="fw-bold">Spielerliste</div>
+                                <small class="text-muted">Daten bearbeiten</small>
+                            </div>
+                            <i class="bi bi-chevron-right ms-auto text-muted"></i>
+                        </a>
+                        <a href="settings"
+                            class="list-group-item list-group-item-action p-3 border-bottom-0 d-flex align-items-center">
+                            <i class="bi bi-gear-fill fs-4 me-3 text-secondary"></i>
+                            <div>
+                                <div class="fw-bold">Einstellungen</div>
+                                <small class="text-muted">App konfigurieren</small>
+                            </div>
+                            <i class="bi bi-chevron-right ms-auto text-muted"></i>
+                        </a>
                     </div>
                 </div>
             </div>
@@ -99,24 +166,45 @@ else
     </div>
 }
 
+<style>
+    .icon-circle {
+        width: 60px;
+        height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+    }
+
+    .backdrop-blur {
+        backdrop-filter: blur(5px);
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .backdrop-blur:hover {
+        background: rgba(255, 255, 255, 0.2);
+    }
+</style>
+
 @code {
     protected override async Task OnInitializedAsync()
     {
-        // BUG FIX: Abonnieren, damit die UI weiß, wenn Daten da sind!
         Service.OnChange += StateHasChanged;
         await Service.InitializeAsync();
     }
 
-    public void Dispose()
-    {
-        Service.OnChange -= StateHasChanged;
-    }
+    public void Dispose() => Service.OnChange -= StateHasChanged;
 
-    private string GetFirstTrainingDate()
+    private string GetNextTrainingDate()
     {
-        if (!Service.Presences.Any()) return "-";
-        var minDate = Service.Presences.Min(p => p.ParsedDate);
-        return minDate.ToString("dd.MM.yyyy");
+        // Einfache Logik: Nächster Dienstag oder Freitag
+        var today = DateTime.Today;
+        int daysUntilTue = ((int)DayOfWeek.Tuesday - (int)today.DayOfWeek + 7) % 7;
+        if (daysUntilTue == 0) daysUntilTue = 7;
+
+        // Hier könnte man komplexe Logik einbauen, simple Placeholder-Logik:
+        return today.AddDays(daysUntilTue).ToString("dd.MM.");
     }
 
     private double CalculateAverageAttendance()
@@ -124,5 +212,24 @@ else
         var distinctDates = Service.Presences.Select(p => p.ParsedDate.Date).Distinct().Count();
         if (distinctDates == 0) return 0;
         return Math.Round((double)Service.Presences.Count / distinctDates, 1);
+    }
+
+    private IEnumerable<dynamic> GetUpcomingBirthdays()
+    {
+        var today = DateTime.Today;
+        var list = new List<dynamic>();
+
+        foreach (var m in Service.YouthMembers.Where(x => x.BirthDate.HasValue))
+        {
+            var bday = m.BirthDate!.Value;
+            var nextBday = new DateTime(today.Year, bday.Month, bday.Day);
+            if (nextBday < today) nextBday = nextBday.AddYears(1);
+
+            if ((nextBday - today).TotalDays <= 30)
+            {
+                list.Add(new { Member = m, Date = nextBday, Age = nextBday.Year - bday.Year });
+            }
+        }
+        return list.OrderBy(x => x.Date);
     }
 }

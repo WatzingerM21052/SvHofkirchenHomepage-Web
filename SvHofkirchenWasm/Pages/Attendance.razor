@@ -4,30 +4,66 @@
 @using SvHofkirchenWasm.Models
 
 <div class="container-fluid p-4">
-    <div class="glass-card p-4 mb-4 d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
-        <div>
-            <h2 class="fw-bold text-primary mb-1">Anwesenheit</h2>
-            <p class="text-muted small mb-0">Trainingseinheit erfassen</p>
+    <div class="glass-card p-4 mb-4">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
+            <div>
+                <h2 class="fw-bold text-primary mb-1">Anwesenheit</h2>
+                <div class="d-flex align-items-center gap-2">
+                    <span class="badge bg-primary bg-gradient rounded-pill">
+                        <i class="bi bi-calendar-event me-1"></i> Training
+                    </span>
+                    @if (Service.IsInitialized)
+                    {
+                        var presentCount = Service.YouthMembers.Count(m => Service.IsPresent(m.MemberId, CurrentDate));
+                        var totalCount = Service.YouthMembers.Count;
+                        var percent = totalCount > 0 ? (double)presentCount / totalCount * 100 : 0;
+
+                        <span class="text-muted small border-start ps-2 ms-1">
+                            Aktuell: <strong class="text-dark">@presentCount</strong> von @totalCount anwesend
+                            (@Math.Round(percent, 0)%)
+                        </span>
+                    }
+                </div>
+            </div>
+
+            <div class="position-relative">
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-0 text-primary fs-5">
+                        <i class="bi bi-calendar4-week"></i>
+                    </span>
+                    <input id="attendanceDate" type="text" class="form-control border-0 fw-bold fs-5 text-primary"
+                        style="width: 220px; background: transparent;" placeholder="Datum wählen..." />
+                </div>
+            </div>
         </div>
-        
-        <div class="d-flex align-items-center gap-2">
-            <span class="fw-bold text-muted small text-uppercase">Datum:</span>
-            <input id="attendanceDate" type="text" class="form-control fw-bold text-center" style="width: 200px;" placeholder="Datum wählen..." />
-        </div>
+
+        @if (Service.IsInitialized)
+        {
+            var presentCount = Service.YouthMembers.Count(m => Service.IsPresent(m.MemberId, CurrentDate));
+            var totalCount = Service.YouthMembers.Count;
+            var percent = totalCount > 0 ? (double)presentCount / totalCount * 100 : 0;
+
+            <div class="progress mt-3" style="height: 6px; border-radius: 10px;">
+                <div class="progress-bar bg-success" role="progressbar"
+                    style="width: @((int)percent)%; transition: width 0.5s ease;"></div>
+            </div>
+        }
     </div>
 
     @if (!Service.IsInitialized)
     {
-        <div class="text-center py-5"><div class="spinner-border text-primary"></div></div>
+        <div class="text-center py-5">
+            <div class="spinner-border text-primary"></div>
+        </div>
     }
     else
     {
         <div class="glass-card overflow-hidden">
             <div class="table-responsive">
                 <table class="table table-hover align-middle mb-0">
-                    <thead class="bg-light">
+                    <thead class="bg-light border-bottom">
                         <tr>
-                            <th class="ps-4" style="width: 60px;"></th>
+                            <th class="ps-4" style="width: 60px;">Status</th>
                             <th>Name</th>
                             <th class="d-none d-md-table-cell">Jahrgang</th>
                             <th>Kategorie</th>
@@ -38,17 +74,23 @@
                         @foreach (var member in Service.YouthMembers.OrderBy(m => m.LastName).ThenBy(m => m.FirstName))
                         {
                             var isPresent = Service.IsPresent(member.MemberId, CurrentDate);
-                            <tr @onclick="() => Toggle(member.MemberId)" 
-                                class="@(isPresent ? "table-active-custom" : "")" 
-                                style="cursor: pointer; border-left: 4px solid @(isPresent ? "#198754" : "transparent");">
-                                
+                            <tr @onclick="() => Toggle(member.MemberId)" class="@(isPresent ? "bg-success bg-opacity-10" : "")"
+                                style="cursor: pointer; border-left: 4px solid @(isPresent ? "#198754" : "transparent"); transition: all 0.2s;">
+
                                 <td class="ps-4">
-                                    <i class="bi @(isPresent ? "bi-check-square-fill text-success" : "bi-square text-muted") fs-4"></i>
+                                    <i
+                                        class="bi @(isPresent ? "bi-check-circle-fill text-success" : "bi-circle text-muted") fs-4"></i>
                                 </td>
-                                
-                                <td><span class="fw-bold text-dark">@member.LastName</span> @member.FirstName</td>
+
+                                <td>
+                                    <span class="fw-bold text-dark">@member.LastName</span> @member.FirstName
+                                </td>
                                 <td class="d-none d-md-table-cell text-muted">@(member.BirthDate?.Year.ToString() ?? "-")</td>
-                                <td><span class="badge rounded-pill @member.CategoryColor">@member.AgeCategory</span></td>
+
+                                <td><span
+                                        class="badge rounded-pill @member.CategoryColor text-white border shadow-sm">@member.AgeCategory</span>
+                                </td>
+
                                 <td class="text-end pe-4 text-muted fw-bold">@member.Age</td>
                             </tr>
                         }
@@ -68,13 +110,12 @@
         Service.OnChange += StateHasChanged;
         await Service.InitializeAsync();
     }
-    
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
             _dotNetRef = DotNetObjectReference.Create(this);
-            // JS Initialisieren
             await JS.InvokeVoidAsync("initDatePicker", "attendanceDate", CurrentDate.ToString("yyyy-MM-dd"), _dotNetRef);
         }
     }

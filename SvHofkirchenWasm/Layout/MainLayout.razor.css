@@ -28,10 +28,14 @@ main {
 }
 
 .footer {
-    text-align: center;
-    padding: 20px;
-    margin-top: 40px;
-    background: #eee;
+    background: #fff;
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
+    margin-top: auto;
+    /* Wichtig für Sticky Footer */
+}
+
+.hover-primary:hover {
+    color: #052767 !important;
 }
 
 @media (min-width: 641px) {

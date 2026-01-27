@@ -1,5 +1,5 @@
 self.assetsManifest = {
-  "version": "3HgQ2FBc",
+  "version": "SoSgtllY",
   "assets": [
     {
       "hash": "sha256-uz2nUD895Crdg9B2v4VdidkPszQzgCxrfOwggiMxUrU=",
@@ -30,7 +30,7 @@ self.assetsManifest = {
       "url": "Pictures/Logo anders.jpeg"
     },
     {
-      "hash": "sha256-2gav3RdW+4IvCXClpMVouIGE0bSJkMJ3V28s0YYk6j8=",
+      "hash": "sha256-7UuzFj15D4r6Gtbw/V4+c5h6K/dtQSOjvfx+JR6atMw=",
       "url": "Pictures/Logos/Hofkirchen_Logo.svg"
     },
     {
@@ -78,11 +78,11 @@ self.assetsManifest = {
       "url": "Pictures/Person.png"
     },
     {
-      "hash": "sha256-L/Q7mtnR91raSG+wFcqfEJrCFy9KN1D0H3Y5GLAjnB8=",
+      "hash": "sha256-uXv12UEZAQi2+kzhDg94onh9D2qR/+GUwUiYyAVGYpk=",
       "url": "Pictures/SVHofkirchenLogoBlack.svg"
     },
     {
-      "hash": "sha256-HeeOQSLX+SZcfzT9zneCTqswbNC/OB7sPfTbhgGbFig=",
+      "hash": "sha256-HuRAa8Ks7AnwPcNTNyG57WDBTbJEqB3rqnG8FX3ha4Y=",
       "url": "Pictures/SVHofkirchenLogoWhite.svg"
     },
     {
@@ -126,7 +126,7 @@ self.assetsManifest = {
       "url": "SvHofkirchen-WebsiteDaten-Backup.db"
     },
     {
-      "hash": "sha256-beViDR5KWlXwA5qVsXhbPqhSokcCmS8A9MmoZxJRMYM=",
+      "hash": "sha256-LLU9raae4dn1ljgRB7ZqFO5QCtliFMjRCu8PmHS1FzU=",
       "url": "SvHofkirchenWasm.styles.css"
     },
     {
@@ -262,12 +262,12 @@ self.assetsManifest = {
       "url": "_framework/Microsoft.Win32.Registry.i9dc47z9na.wasm"
     },
     {
-      "hash": "sha256-LtPFW1w3fORBI9aXv1IN1Pw4aYMoG7xmWr35s/d7mVg=",
-      "url": "_framework/SvHofkirchenWasm.e4hys3skxf.pdb"
+      "hash": "sha256-HHrVeZZdeYJRT1E0h0zotApiwat99ZkCdgziYYCm18c=",
+      "url": "_framework/SvHofkirchenWasm.ot3vpf0op0.wasm"
     },
     {
-      "hash": "sha256-QzRG8Ozz3by+w3p1i3vV4D1Mp1E9v2Yj7HUk6QgKdlE=",
-      "url": "_framework/SvHofkirchenWasm.xni5mig29f.wasm"
+      "hash": "sha256-La3A8X+FOsk2SZbIWE7Xp7KKGdFyQe9izixKlsAm2ms=",
+      "url": "_framework/SvHofkirchenWasm.xnx34nuvty.pdb"
     },
     {
       "hash": "sha256-i8txTGTPt84yEPhnifMAXYtYpzp2kdhPD7vDT8bQpEg=",
@@ -934,8 +934,8 @@ self.assetsManifest = {
       "url": "_framework/blazor.webassembly.66stpp682q.js"
     },
     {
-      "hash": "sha256-TCFxdZu5WSrvLPBw3ICL1cYhhG+lpnUTbYYcN9Ocfps=",
-      "url": "_framework/dotnet.8vpbj9t8hy.js"
+      "hash": "sha256-5VpwxGU0zYsq4mTKNPip0Gp/TaKerWUo8el38m+ys7g=",
+      "url": "_framework/dotnet.htoh3ge3jn.js"
     },
     {
       "hash": "sha256-N5+2iI/5sboutHuGSUN15R+EfBKMKSAp3J/S04NjHxY=",
@@ -978,7 +978,7 @@ self.assetsManifest = {
       "url": "_framework/netstandard.zh1h2lu7qi.wasm"
     },
     {
-      "hash": "sha256-K2gaKpOzdHH8lL7D4becRHPLEr3XK8OtTP8x9FJmF5E=",
+      "hash": "sha256-EJjwmOKNdciiqT2r806rRdU2SSWyBrkFyt6GEAvIdI8=",
       "url": "css/app.css"
     },
     {
@@ -998,11 +998,11 @@ self.assetsManifest = {
       "url": "icon-512.png"
     },
     {
-      "hash": "sha256-Ohv4g7RN/J5iGHF3HOlLbngvjxlILPYgrxRDc59xGnI=",
+      "hash": "sha256-daxC+VczbLDlKmD1v6CoeBVdfZ3JxTdu+bVX62x5kZw=",
       "url": "index.html"
     },
     {
-      "hash": "sha256-Yy5/hBqRmmU2MJ1TKwP2aXoTO6+OjzrLmJIsC2Wy4H8=",
+      "hash": "sha256-f4c8YV1qrr6RSiVYWMQT7R5W2OkT+iXmE5H69/uRvGQ=",
       "url": "lib/bootstrap/dist/css/bootstrap-grid.css"
     },
     {
@@ -1010,7 +1010,7 @@ self.assetsManifest = {
       "url": "lib/bootstrap/dist/css/bootstrap-grid.css.map"
     },
     {
-      "hash": "sha256-5nDHMGiyfZHl3UXePuhLDQR9ncPfBR1HJeZLXyJNV24=",
+      "hash": "sha256-hN2ttMG/K3wQlFrN3SbQ1YF4tIJHCE4oYP+QibT3vOY=",
       "url": "lib/bootstrap/dist/css/bootstrap-grid.min.css"
     },
     {
@@ -1018,7 +1018,7 @@ self.assetsManifest = {
       "url": "lib/bootstrap/dist/css/bootstrap-grid.min.css.map"
     },
     {
-      "hash": "sha256-CZxoF8zjaLlyVkcvVCDlc8CeQR1w1RMrvgYx30cs8kM=",
+      "hash": "sha256-M15fHTKfMK6cTars5c28PNhN6hD0qeUb3HPzOdoPwCc=",
       "url": "lib/bootstrap/dist/css/bootstrap-grid.rtl.css"
     },
     {
@@ -1026,7 +1026,7 @@ self.assetsManifest = {
       "url": "lib/bootstrap/dist/css/bootstrap-grid.rtl.css.map"
     },
     {
-      "hash": "sha256-vMxTcvkC4Ly7LiAT3G8yEy9EpTr7Fge4SczWp07/p3k=",
+      "hash": "sha256-+rGG3u63SMkHL80Ga42LAawPUj7i8vaR2Kuenqlta2E=",
       "url": "lib/bootstrap/dist/css/bootstrap-grid.rtl.min.css"
     },
     {
@@ -1034,7 +1034,7 @@ self.assetsManifest = {
       "url": "lib/bootstrap/dist/css/bootstrap-grid.rtl.min.css.map"
     },
     {
-      "hash": "sha256-lo9YI82OF03vojdu+XOR3+DRrLIpMhpzZNmHbM5CDMA=",
+      "hash": "sha256-rjusxCRzKjztCcfgOVduAc3e3Z7KvimJGokJSeADNmE=",
       "url": "lib/bootstrap/dist/css/bootstrap-reboot.css"
     },
     {
@@ -1042,7 +1042,7 @@ self.assetsManifest = {
       "url": "lib/bootstrap/dist/css/bootstrap-reboot.css.map"
     },
     {
-      "hash": "sha256-l8vt5oozv958eMd9TFsPAWgl9JJK9YKfbVSs8mchQ84=",
+      "hash": "sha256-y72bT5TKmFmfvw3bNEzPRNZa/8595xtseZIcBUV0PdM=",
       "url": "lib/bootstrap/dist/css/bootstrap-reboot.min.css"
     },
     {
@@ -1050,7 +1050,7 @@ self.assetsManifest = {
       "url": "lib/bootstrap/dist/css/bootstrap-reboot.min.css.map"
     },
     {
-      "hash": "sha256-V8psnHoJS/MPlCXWwc/J3tGtp9c3gGFRmqsIQgpn+Gg=",
+      "hash": "sha256-gRKIHVkBgnCPUs/hmZsXynZ9ZJpvsE77idtljDkrWGI=",
       "url": "lib/bootstrap/dist/css/bootstrap-reboot.rtl.css"
     },
     {
@@ -1058,7 +1058,7 @@ self.assetsManifest = {
       "url": "lib/bootstrap/dist/css/bootstrap-reboot.rtl.css.map"
     },
     {
-      "hash": "sha256-/8jh8hcEMFKyS6goWqnNu7t3EzZPCGdQZgO6sCkI8tI=",
+      "hash": "sha256-UkajePbMzGj8y73Imkd3dWWnLJr0v2CrBCLMrVMleP8=",
       "url": "lib/bootstrap/dist/css/bootstrap-reboot.rtl.min.css"
     },
     {
@@ -1066,7 +1066,7 @@ self.assetsManifest = {
       "url": "lib/bootstrap/dist/css/bootstrap-reboot.rtl.min.css.map"
     },
     {
-      "hash": "sha256-2BubgNUPlQSF/0wLFcRXQ/Yjzk9vsUbDAeK2QM+h+yo=",
+      "hash": "sha256-uIzOR4gILoNjCGNryIsWnkEGO3BSwRa/MLjr73tDodE=",
       "url": "lib/bootstrap/dist/css/bootstrap-utilities.css"
     },
     {
@@ -1074,7 +1074,7 @@ self.assetsManifest = {
       "url": "lib/bootstrap/dist/css/bootstrap-utilities.css.map"
     },
     {
-      "hash": "sha256-KyE9xbKO9CuYx0HXpIKgsWIvXkAfITtiQ172j26wmRs=",
+      "hash": "sha256-ZBXbYF8OZrF1GDOLMLvW/zRPtx1RfeMDYj5D2Wb/9jo=",
       "url": "lib/bootstrap/dist/css/bootstrap-utilities.min.css"
     },
     {
@@ -1082,7 +1082,7 @@ self.assetsManifest = {
       "url": "lib/bootstrap/dist/css/bootstrap-utilities.min.css.map"
     },
     {
-      "hash": "sha256-H6wkBbSwjua2veJoThJo4uy161jp+DOiZTloUlcZ6qQ=",
+      "hash": "sha256-MwFckg8YbY2WrveNQnXkfULkprYhFOq+t1BH92A7GsI=",
       "url": "lib/bootstrap/dist/css/bootstrap-utilities.rtl.css"
     },
     {
@@ -1090,7 +1090,7 @@ self.assetsManifest = {
       "url": "lib/bootstrap/dist/css/bootstrap-utilities.rtl.css.map"
     },
     {
-      "hash": "sha256-GAUum6FjwQ8HrXGaoFRnHTqQQLpljXGavT7mBX8E9qU=",
+      "hash": "sha256-7MYEMUFgHEc1CjrfAK/TlV30POxgoxXk2b+vAs/143U=",
       "url": "lib/bootstrap/dist/css/bootstrap-utilities.rtl.min.css"
     },
     {
@@ -1098,7 +1098,7 @@ self.assetsManifest = {
       "url": "lib/bootstrap/dist/css/bootstrap-utilities.rtl.min.css.map"
     },
     {
-      "hash": "sha256-GKEF18s44B5e0MolXAkpkqLiEbOVlKf6VyYr/G/E6pw=",
+      "hash": "sha256-CzmECrtXV8BSk/+8SG+Rw7Fr+3hCt2bS2bEkS4YD3PQ=",
       "url": "lib/bootstrap/dist/css/bootstrap.css"
     },
     {
@@ -1106,7 +1106,7 @@ self.assetsManifest = {
       "url": "lib/bootstrap/dist/css/bootstrap.css.map"
     },
     {
-      "hash": "sha256-PI8n5gCcz9cQqQXm3PEtDuPG8qx9oFsFctPg0S5zb8g=",
+      "hash": "sha256-sKIQRfQriISuQ9l/44b1zHfQniGXJhGonVtB2LlSuIs=",
       "url": "lib/bootstrap/dist/css/bootstrap.min.css"
     },
     {
@@ -1114,7 +1114,7 @@ self.assetsManifest = {
       "url": "lib/bootstrap/dist/css/bootstrap.min.css.map"
     },
     {
-      "hash": "sha256-j5E4XIj1p1kNnDi0x1teX9RXoh1/FNlPvCML9YmRh2Q=",
+      "hash": "sha256-/rceNUMI0RlFJugRzjua815bgXwawEJBGBPh4Vx3r38=",
       "url": "lib/bootstrap/dist/css/bootstrap.rtl.css"
     },
     {
@@ -1122,7 +1122,7 @@ self.assetsManifest = {
       "url": "lib/bootstrap/dist/css/bootstrap.rtl.css.map"
     },
     {
-      "hash": "sha256-h5lE7Nm8SkeIpBHHYxN99spP3VuGFKl5NZgsocil7zk=",
+      "hash": "sha256-rI1w2GDxZPCr77bpZIGQ8mUvMVtEr+gBtahl5RIPJpA=",
       "url": "lib/bootstrap/dist/css/bootstrap.rtl.min.css"
     },
     {
@@ -1130,7 +1130,7 @@ self.assetsManifest = {
       "url": "lib/bootstrap/dist/css/bootstrap.rtl.min.css.map"
     },
     {
-      "hash": "sha256-FsiHTQEG0Ro6yC1aZzXsrxQcJo29+KWD1P5uiM8cDU0=",
+      "hash": "sha256-mntpH/FDq2uvtxOKCvTsA3lNyYqriB0Y4HTyJJBwRHM=",
       "url": "lib/bootstrap/dist/js/bootstrap.bundle.js"
     },
     {
@@ -1138,7 +1138,7 @@ self.assetsManifest = {
       "url": "lib/bootstrap/dist/js/bootstrap.bundle.js.map"
     },
     {
-      "hash": "sha256-CDOy6cOibCWEdsRiZuaHf8dSGGJRYuBGC+mjoJimHGw=",
+      "hash": "sha256-6zfk2L8R3wCgRbZzpkEi7UYC2bc6fYGIgFfNeqyOWnQ=",
       "url": "lib/bootstrap/dist/js/bootstrap.bundle.min.js"
     },
     {
@@ -1146,7 +1146,7 @@ self.assetsManifest = {
       "url": "lib/bootstrap/dist/js/bootstrap.bundle.min.js.map"
     },
     {
-      "hash": "sha256-b99YALtFayMEyuwZX0gIc+as4gHz3HkdXyABeVI4f28=",
+      "hash": "sha256-GwnzVfo+Chks9WT/okRcpZ+ycgx+eO+Tdg+7u9Fc6cM=",
       "url": "lib/bootstrap/dist/js/bootstrap.esm.js"
     },
     {
@@ -1154,7 +1154,7 @@ self.assetsManifest = {
       "url": "lib/bootstrap/dist/js/bootstrap.esm.js.map"
     },
     {
-      "hash": "sha256-QZdFT1ZNdly4rmgUBtXmXFS9BU1FTa+sPe6h794sFRQ=",
+      "hash": "sha256-REjSeieVKd00nAKwd6dv7MMhuVKvKctPmLI4iDRs/cc=",
       "url": "lib/bootstrap/dist/js/bootstrap.esm.min.js"
     },
     {
@@ -1162,7 +1162,7 @@ self.assetsManifest = {
       "url": "lib/bootstrap/dist/js/bootstrap.esm.min.js.map"
     },
     {
-      "hash": "sha256-gTJrkhxIyaxAZZlWECyaNHdk0DyTJizBANTUoWdxfUg=",
+      "hash": "sha256-DzzjWU6KMLcAzhdu6G14hU1nzJAZZYNIDrxoXhAU0e8=",
       "url": "lib/bootstrap/dist/js/bootstrap.js"
     },
     {
@@ -1170,7 +1170,7 @@ self.assetsManifest = {
       "url": "lib/bootstrap/dist/js/bootstrap.js.map"
     },
     {
-      "hash": "sha256-3gQJhtmj7YnV1fmtbVcnAV6eI4ws0Tr48bVZCThtCGQ=",
+      "hash": "sha256-aCTIqw9op0XQGYnNe1649V7fnihACD48OP3M8BP2xVM=",
       "url": "lib/bootstrap/dist/js/bootstrap.min.js"
     },
     {
@@ -1182,7 +1182,7 @@ self.assetsManifest = {
       "url": "manifest.webmanifest"
     },
     {
-      "hash": "sha256-NT9QGHeCjbHUAYzxZIpKrb6qDhZ+f1dUyD6rACJnAdg=",
+      "hash": "sha256-YvP1SdxvSsAe+WRn/VDJHlG1voaQTFdqF74teCaaYGw=",
       "url": "youth.json"
     }
   ]
