@@ -3,12 +3,12 @@
 @inject YouthService Service
 
 <div class="container-fluid p-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-4 gap-3">
         <div>
             <h2 class="fw-bold text-primary mb-0">Kaderverwaltung</h2>
             <p class="text-muted small mb-0">Alle Spieler im Überblick</p>
         </div>
-        <button class="btn btn-primary rounded-pill px-4 shadow-sm" @onclick="() => OpenEditor(null)">
+        <button class="btn btn-primary rounded-pill px-4 shadow-sm fw-bold" @onclick="() => OpenEditor(null)">
             <i class="bi bi-plus-lg me-2"></i>Spieler anlegen
         </button>
     </div>
@@ -16,53 +16,88 @@
     @if (Service.IsInitialized)
     {
         <div class="glass-card p-3 mb-4">
-             <div class="input-group">
-                  <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
-                  <input type="text" class="form-control border-start-0 shadow-none ps-0" placeholder="Suche nach Namen..." 
-                         @bind="SearchTerm" @bind:event="oninput" />
-             </div>
+            <div class="row g-2 align-items-center">
+                <div class="col-md-8">
+                    <div class="input-group bg-light rounded-3 border overflow-hidden">
+                        <span class="input-group-text bg-transparent border-0 text-muted ps-3">
+                            <i class="bi bi-search"></i>
+                        </span>
+                        <input type="text" class="form-control border-0 bg-transparent shadow-none"
+                            placeholder="Suche nach Namen..." @bind="SearchTerm" @bind:event="oninput" />
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="input-group">
+                        <span class="input-group-text bg-white border text-muted rounded-start-3 ms-md-auto">
+                            <i class="bi bi-filter"></i>
+                        </span>
+                        <select class="form-select border-start-0 ps-0 rounded-end-3 text-muted fw-bold" @bind="SortOption"
+                            style="cursor:pointer;">
+                            <option value="name_asc">A-Z (Nachname)</option>
+                            <option value="name_desc">Z-A (Nachname)</option>
+                            <option value="age_asc">Jüngste zuerst</option>
+                            <option value="age_desc">Älteste zuerst</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <div class="glass-card overflow-hidden">
-             <div class="table-responsive">
-                 <table class="table table-hover align-middle mb-0">
-                     <thead class="bg-light">
-                         <tr>
-                             <th class="ps-4">Name</th>
-                             <th>Geburtsdatum</th>
-                             <th>Kategorie</th>
-                             <th class="text-end pe-4">Optionen</th>
-                         </tr>
-                     </thead>
-                     <tbody>
-                         @foreach (var member in GetFilteredMembers())
-                         {
-                             <tr>
-                                 <td class="ps-4">
-                                     <span class="fw-bold text-dark">@member.LastName</span> @member.FirstName
-                                 </td>
-                                 <td class="text-muted font-monospace">@(member.BirthDate?.ToString("dd.MM.yyyy") ?? "-")</td>
-                                 <td><span class="badge rounded-pill @member.CategoryColor">@member.AgeCategory</span></td>
-                                 <td class="text-end pe-4">
-                                     <button class="btn btn-icon btn-sm rounded-circle me-1" @onclick="() => OpenEditor(member)" title="Bearbeiten">
-                                         <i class="bi bi-pencil-fill text-primary"></i>
-                                     </button>
-                                     <button class="btn btn-icon btn-sm rounded-circle" @onclick="() => RequestDelete(member)" title="Löschen">
-                                         <i class="bi bi-trash-fill text-danger"></i>
-                                     </button>
-                                 </td>
-                             </tr>
-                         }
-                     </tbody>
-                 </table>
-             </div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-light border-bottom">
+                        <tr>
+                            <th class="ps-4 text-uppercase text-muted small py-3">Name</th>
+                            <th class="text-uppercase text-muted small">Geburtsdatum</th>
+                            <th class="text-uppercase text-muted small">Kategorie</th>
+                            <th class="text-end pe-4 text-uppercase text-muted small">Aktionen</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var member in GetFilteredMembers())
+                        {
+                            <tr>
+                                <td class="ps-4">
+                                    <div class="fw-bold text-dark">@member.LastName</div>
+                                    <div class="small text-muted">@member.FirstName</div>
+                                </td>
+                                <td class="text-muted font-monospace">
+                                    @(member.BirthDate?.ToString("dd.MM.yyyy") ?? "-")
+                                </td>
+                                <td>
+                                    <span class="badge rounded-pill @member.CategoryColor border shadow-sm text-white">
+                                        @member.AgeCategory
+                                    </span>
+                                </td>
+                                <td class="text-end pe-4">
+                                    <button class="btn btn-light btn-sm rounded-circle shadow-sm border me-1"
+                                        @onclick="() => OpenEditor(member)" title="Bearbeiten">
+                                        <i class="bi bi-pencil-fill text-primary"></i>
+                                    </button>
+                                    <button class="btn btn-light btn-sm rounded-circle shadow-sm border"
+                                        @onclick="() => RequestDelete(member)" title="Löschen">
+                                        <i class="bi bi-trash-fill text-danger"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                        @if (!GetFilteredMembers().Any())
+                        {
+                            <tr>
+                                <td colspan="4" class="text-center py-4 text-muted">Keine Spieler gefunden.</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
         </div>
     }
 </div>
 
 @if (ShowEditor)
 {
-    <div class="modal-backdrop fade show"></div>
+    <div class="modal-backdrop fade show" style="backdrop-filter: blur(4px);"></div>
     <div class="modal fade show d-block" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
@@ -74,23 +109,23 @@
                 </div>
                 <div class="modal-body p-4">
                     <div class="form-floating mb-3">
-                        <input id="lastName" class="form-control" placeholder="Nachname" @bind="EditModel.LastName" />
+                        <input id="lastName" class="form-control rounded-3" placeholder="Nachname"
+                            @bind="EditModel.LastName" />
                         <label for="lastName">Nachname</label>
                     </div>
                     <div class="form-floating mb-3">
-                        <input id="firstName" class="form-control" placeholder="Vorname" @bind="EditModel.FirstName" />
+                        <input id="firstName" class="form-control rounded-3" placeholder="Vorname"
+                            @bind="EditModel.FirstName" />
                         <label for="firstName">Vorname</label>
                     </div>
-                    
                     <div class="form-group">
                         <label class="small text-muted fw-bold ms-1 mb-1">Geburtsdatum</label>
-                        <input type="date" class="form-control fw-bold" 
-                               value="@(TempDate?.ToString("yyyy-MM-dd"))" 
-                               @onchange="OnDateChanged" />
-                        @if(TempDate.HasValue)
+                        <input type="date" class="form-control rounded-3 fw-bold"
+                            value="@(TempDate?.ToString("yyyy-MM-dd"))" @onchange="OnDateChanged" />
+                        @if (TempDate.HasValue)
                         {
                             <div class="small text-end text-muted mt-1">
-                                Berechnetes Alter: <span class="fw-bold">@CalculateAge(TempDate.Value) Jahre</span>
+                                Berechnetes Alter: <span class="fw-bold text-primary">@CalculateAge(TempDate.Value) Jahre</span>
                             </div>
                         }
                     </div>
@@ -106,7 +141,7 @@
 
 @if (ShowDeleteConfirm)
 {
-    <div class="modal-backdrop fade show"></div>
+    <div class="modal-backdrop fade show" style="backdrop-filter: blur(4px);"></div>
     <div class="modal fade show d-block" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered modal-sm">
             <div class="modal-content border-0 shadow-lg rounded-4 text-center">
@@ -115,10 +150,12 @@
                         <i class="bi bi-exclamation-lg fs-1"></i>
                     </div>
                     <h5 class="fw-bold">Löschen?</h5>
-                    <p class="text-muted small">Dies kann nicht rückgängig gemacht werden.</p>
-                    <div class="d-flex justify-content-center gap-2 mt-4">
-                        <button class="btn btn-light rounded-pill px-3" @onclick="() => ShowDeleteConfirm = false">Zurück</button>
-                        <button class="btn btn-danger rounded-pill px-3" @onclick="ConfirmDelete">Ja, löschen</button>
+                    <p class="text-muted small mb-4">Möchtest du <strong>@MemberToDelete?.FullName</strong> wirklich
+                        unwiderruflich löschen?</p>
+                    <div class="d-flex justify-content-center gap-2">
+                        <button class="btn btn-light rounded-pill px-3"
+                            @onclick="() => ShowDeleteConfirm = false">Abbrechen</button>
+                        <button class="btn btn-danger rounded-pill px-3 fw-bold" @onclick="ConfirmDelete">Löschen</button>
                     </div>
                 </div>
             </div>
@@ -127,15 +164,12 @@
 }
 
 @code {
-    // ... Variablen für Search/Sort wie vorher ...
     private string SearchTerm = "";
-    private string SortOption = "name_asc";
-    
+    private string SortOption = "name_asc"; // Default
+
     private bool ShowEditor = false;
     private MemberDto EditModel = new();
-    
-    // Temporäres DateTime für das Input-Feld
-    private DateTime? TempDate; 
+    private DateTime? TempDate;
 
     private bool ShowDeleteConfirm = false;
     private MemberDto? MemberToDelete;
@@ -147,54 +181,50 @@
     }
     public void Dispose() => Service.OnChange -= StateHasChanged;
 
-    // Filter Logik
     private IEnumerable<MemberDto> GetFilteredMembers()
     {
         var query = Service.YouthMembers.AsEnumerable();
+
         if (!string.IsNullOrWhiteSpace(SearchTerm))
             query = query.Where(m => m.FullName.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase));
-            
-        return query.OrderBy(m => m.LastName).ThenBy(m => m.FirstName);
+
+        // Sortierlogik
+        query = SortOption switch
+        {
+            "name_desc" => query.OrderByDescending(m => m.LastName).ThenByDescending(m => m.FirstName),
+            "age_asc" => query.OrderByDescending(m => m.BirthDate), // Jüngste = späteres Datum
+            "age_desc" => query.OrderBy(m => m.BirthDate), // Älteste = früheres Datum
+            _ => query.OrderBy(m => m.LastName).ThenBy(m => m.FirstName) // name_asc
+        };
+
+        return query;
     }
 
     private void OpenEditor(MemberDto? member)
     {
         if (member == null)
         {
-            // Neu
             EditModel = new MemberDto();
-            TempDate = new DateTime(2015, 1, 1); // Standardwert
+            TempDate = new DateTime(2015, 1, 1);
         }
         else
         {
-            // Edit
-            EditModel = new MemberDto 
-            { 
-                MemberId = member.MemberId, 
-                FirstName = member.FirstName, 
-                LastName = member.LastName, 
-                BirthDateString = member.BirthDateString 
+            EditModel = new MemberDto
+            {
+                MemberId = member.MemberId,
+                FirstName = member.FirstName,
+                LastName = member.LastName,
+                BirthDateString = member.BirthDateString
             };
-            
-            // Konvertieren String "dd.MM.yyyy" -> DateTime für den Picker
-            if (member.BirthDate.HasValue)
-            {
-                TempDate = member.BirthDate.Value;
-            }
-            else
-            {
-                TempDate = null;
-            }
+            if (member.BirthDate.HasValue) TempDate = member.BirthDate.Value;
+            else TempDate = null;
         }
         ShowEditor = true;
     }
 
     private void OnDateChanged(ChangeEventArgs e)
     {
-        if (DateTime.TryParse(e.Value?.ToString(), out var date))
-        {
-            TempDate = date;
-        }
+        if (DateTime.TryParse(e.Value?.ToString(), out var date)) TempDate = date;
     }
 
     private int CalculateAge(DateTime date)
@@ -209,24 +239,22 @@
     {
         if (string.IsNullOrWhiteSpace(EditModel.LastName)) return;
 
-        // Zurück konvertieren: DateTime -> String "dd.MM.yyyy"
-        if (TempDate.HasValue)
-        {
-            EditModel.BirthDateString = TempDate.Value.ToString("dd.MM.yyyy");
-        }
-        else
-        {
-            EditModel.BirthDateString = "";
-        }
+        EditModel.BirthDateString = TempDate.HasValue ? TempDate.Value.ToString("dd.MM.yyyy") : "";
 
         if (EditModel.MemberId == 0) await Service.AddMemberAsync(EditModel);
         else await Service.UpdateMemberAsync(EditModel);
-        
+
         CloseEditor();
     }
 
     private void CloseEditor() => ShowEditor = false;
-    
     private void RequestDelete(MemberDto member) { MemberToDelete = member; ShowDeleteConfirm = true; }
-    private async Task ConfirmDelete() { if(MemberToDelete!=null) { await Service.DeleteMemberAsync(MemberToDelete.MemberId); ShowDeleteConfirm = false; } }
+    private async Task ConfirmDelete()
+    {
+        if (MemberToDelete != null)
+        {
+            await
+    Service.DeleteMemberAsync(MemberToDelete.MemberId); ShowDeleteConfirm = false;
+        }
+    }
 }
