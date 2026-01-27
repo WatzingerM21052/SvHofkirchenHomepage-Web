@@ -1,0 +1,253 @@
+:root {
+    --primary: #052767;
+    --primary-light: #0d6efd;
+    --primary-dark: #02123a;
+    --accent: #ffd700;
+    --accent-hover: #e6c200;
+    --bg-light: #f4f7f9;
+    /* Etwas kühleres Grau */
+    --text-dark: #1a1a1a;
+    --white: #ffffff;
+    --danger: #c82333;
+    --border-color: rgba(5, 39, 103, 0.15);
+    /* Stärkerer Kontrast für Ränder */
+    --shadow-soft: 0 8px 24px rgba(0, 0, 0, 0.06);
+    --shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background-color: var(--bg-light);
+    color: var(--text-dark);
+}
+
+/* --- Layout (Footer Fix) --- */
+.page {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.content {
+    flex: 1;
+    /* Drückt den Footer nach ganz unten, auch bei wenig Inhalt */
+    padding-bottom: 2rem;
+}
+
+.sidebar {
+    background: linear-gradient(180deg, var(--primary) 0%, var(--primary-dark) 100%);
+    color: white;
+    box-shadow: 4px 0 10px rgba(0, 0, 0, 0.1);
+    z-index: 100;
+    /* Sidebar über Content */
+}
+
+@media (min-width: 641px) {
+    .page {
+        flex-direction: row;
+    }
+
+    .sidebar {
+        width: 260px;
+        height: 100vh;
+        position: sticky;
+        top: 0;
+    }
+}
+
+/* --- NavMenu Fixes --- */
+.nav-item {
+    font-size: 0.95rem;
+}
+
+.nav-item .nav-link {
+    color: rgba(255, 255, 255, 0.8) !important;
+    border-radius: 12px;
+    margin: 4px 16px;
+    padding: 12px 16px;
+    transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border: 1px solid transparent;
+}
+
+/* Icon Fixierung */
+.nav-item .nav-link i {
+    font-size: 1.25rem;
+    width: 24px;
+    text-align: center;
+    display: inline-flex;
+    justify-content: center;
+}
+
+.nav-item .nav-link:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #fff !important;
+    transform: translateX(4px);
+}
+
+.nav-item .nav-link.active {
+    background-color: #ffffff;
+    color: #052767 !important;
+    font-weight: 700;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+}
+
+.nav-item .nav-link.active i {
+    color: #052767;
+}
+
+/* --- Verbesserte Glass Cards (Task B: Ränder & Kontrast) --- */
+.glass-card {
+    background: var(--white);
+    border-radius: 16px;
+    border: 1px solid var(--border-color);
+    /* Deutlicherer Rand */
+    box-shadow: var(--shadow-soft);
+    transition: transform 0.2s, box-shadow 0.2s;
+
+    /* WICHTIG: Overflow muss sichtbar sein, sonst werden Dropdowns abgeschnitten! */
+    overflow: visible;
+}
+
+.dashboard-hero {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    color: white;
+    border-radius: 20px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 10px 20px -5px rgba(5, 39, 103, 0.4);
+}
+
+/* --- Dropdown Animationen (NEU) --- */
+.dropdown-menu {
+    animation: slideIn 0.2s ease-out;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    margin-top: 8px !important;
+    /* Etwas Abstand zum Button */
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* --- Modal Styles (Custom) --- */
+.modal-backdrop {
+    background-color: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+}
+
+.modal-content {
+    border-radius: 16px;
+    border: none;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+}
+
+/* --- Form Controls --- */
+.form-control {
+    border-radius: 10px;
+    border: 1px solid #ced4da;
+    /* Standard Bootstrap Border wiederherstellen für Sichtbarkeit */
+    padding: 10px 15px;
+    background-color: #f8f9fa;
+    transition: all 0.2s;
+}
+
+.form-control:focus {
+    background-color: #fff;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 0.25rem rgba(5, 39, 103, 0.15);
+}
+
+/* --- Task A: Fancy Flatpickr Design --- */
+.date-picker-fancy,
+.flatpickr-input {
+    appearance: none;
+    background-color: var(--white) !important;
+    border: 2px solid var(--border-color) !important;
+    border-radius: 12px !important;
+    padding: 10px 15px !important;
+    font-family: inherit;
+    font-size: 1rem;
+    font-weight: 700 !important;
+    color: var(--primary) !important;
+    outline: none;
+    cursor: pointer;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
+    transition: all 0.3s ease;
+    text-align: center;
+}
+
+.flatpickr-input:focus,
+.flatpickr-input:hover,
+.date-picker-fancy:focus,
+.date-picker-fancy:hover {
+    border-color: var(--primary) !important;
+    box-shadow: 0 0 0 4px rgba(5, 39, 103, 0.1);
+    transform: translateY(-1px);
+}
+
+/* Custom Calendar Theme Override */
+.flatpickr-calendar {
+    border-radius: 16px !important;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2) !important;
+    border: none !important;
+}
+
+.flatpickr-day.selected {
+    background: var(--primary) !important;
+    border-color: var(--primary) !important;
+}
+
+/* --- Buttons --- */
+.btn-primary {
+    background-color: var(--primary);
+    border-color: var(--primary);
+}
+
+.btn-primary:hover {
+    background-color: var(--primary-dark);
+    border-color: var(--primary-dark);
+}
+
+.btn-warning {
+    background-color: var(--accent);
+    border-color: var(--accent);
+    color: var(--primary-dark);
+}
+
+/* --- Table Styles --- */
+.table th {
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    color: #6c757d;
+    letter-spacing: 0.5px;
+    padding-bottom: 12px;
+}
+
+.table td {
+    vertical-align: middle;
+    padding: 12px 8px;
+}
+
+.table tr {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
