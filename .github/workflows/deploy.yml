@@ -27,14 +27,7 @@ jobs:
 
       - name: Publish .NET Project
         run: dotnet publish SvHofkirchenWasm/SvHofkirchenWasm.csproj -c Release -o release --nologo
-
-      - name: Fix asset references in index.html
-        run: |
-          cd release/wwwroot
-          BLAZOR_JS=$(ls _framework/blazor.webassembly.*.js | head -n 1 | sed 's|_framework/||')
-          sed -i "s|blazor.webassembly.js|$BLAZOR_JS|g" index.html
-          cd ../..
-
+        
       - name: Change base-tag in index.html
         run: |
           REPO_NAME=$(echo "${{ github.repository }}" | awk -F / '{print $2}')
