@@ -1,6 +1,10 @@
 self.assetsManifest = {
-  "version": "07wIs/kR",
+  "version": "oFueEoX0",
   "assets": [
+    {
+      "hash": "sha256-47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=",
+      "url": ".nojekyll"
+    },
     {
       "hash": "sha256-uz2nUD895Crdg9B2v4VdidkPszQzgCxrfOwggiMxUrU=",
       "url": "Pictures/AITraining.jpg"
@@ -262,12 +266,12 @@ self.assetsManifest = {
       "url": "_framework/Microsoft.Win32.Registry.i9dc47z9na.wasm"
     },
     {
-      "hash": "sha256-d2Ie2DZ/mtCt3vboYBQJPpzz2ldlDqCXccAoqN7gdlA=",
-      "url": "_framework/SvHofkirchenWasm.1i00jyu8j2.pdb"
+      "hash": "sha256-lAInKubjiS0NknkGSz0hstyZ69rRXGwpE+SSN2BqzGY=",
+      "url": "_framework/SvHofkirchenWasm.4ofhl9m5ek.pdb"
     },
     {
-      "hash": "sha256-or2EhakAxNR0PtgyHXoIgn2qq6BroiIBzjKHMvrP+GE=",
-      "url": "_framework/SvHofkirchenWasm.ykb4unpy7i.wasm"
+      "hash": "sha256-wPwEcIsZe0KWMXFzYLtysl9Ljty8QiEwrKOtQoYtUyo=",
+      "url": "_framework/SvHofkirchenWasm.cpbwshg2c2.wasm"
     },
     {
       "hash": "sha256-i8txTGTPt84yEPhnifMAXYtYpzp2kdhPD7vDT8bQpEg=",
@@ -954,8 +958,8 @@ self.assetsManifest = {
       "url": "_framework/dotnet.runtime.js.map"
     },
     {
-      "hash": "sha256-lo2rT8ZlHAA2MPUaTIMbfoCWSW45XiBPRIokVJuixqk=",
-      "url": "_framework/dotnet.ytyp9ezx88.js"
+      "hash": "sha256-RQL57B2GbT5PdT/NyG/UzV0ncu+9oDI5hmPab+pqBRU=",
+      "url": "_framework/dotnet.xp2u5hlpa5.js"
     },
     {
       "hash": "sha256-SZLtQnRc0JkwqHab0VUVP7T3uBPSeYzxzDnpxPpUnHk=",
