@@ -29,12 +29,11 @@ jobs:
     # FIX 1: Base-Tag automatisch ändern
     # Nimmt die index.html im 'release'-Ordner und tauscht "/" gegen "/RepoName/" aus
     # -----------------------------------------------------------------
+# Robusterer Befehl: Ersetzt JEDES <base href="..."> durch den richtigen Pfad
     - name: Change base-tag in index.html
       run: |
-        # Holt den Namen des Repositories (z.B. SvHofkirchenHomepage-Web)
         REPO_NAME=$(echo "${{ github.repository }}" | awk -F / '{print $2}')
-        # Ersetzt den Slash durch /RepoName/
-        sed -i "s|<base href=\"/\" />|<base href=\"/$REPO_NAME/\" />|g" release/wwwroot/index.html
+        sed -i "s|<base href=\".*\" />|<base href=\"/$REPO_NAME/\" />|g" release/wwwroot/index.html
 
     # -----------------------------------------------------------------
     # FIX 2: Routing (404.html Trick)
