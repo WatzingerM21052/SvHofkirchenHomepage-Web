@@ -1,7 +1,8 @@
 ﻿<div class="d-flex flex-column h-100">
     <div class="p-4 text-center border-bottom border-secondary">
         <a href="" class="d-block text-decoration-none">
-            <img src="Pictures/SVHofkirchenLogoWhite.svg" alt="SV Hofkirchen" class="img-fluid mb-2" style="max-height: 80px;" />
+            <img src="Pictures/SVHofkirchenLogoWhite.svg" alt="SV Hofkirchen" class="img-fluid mb-2"
+                style="max-height: 80px;" />
             <h6 class="text-white mb-0 fw-bold text-uppercase letter-spacing-1">Sektion Schach</h6>
             <small class="text-white-50">Jugend Portal</small>
         </a>
@@ -9,36 +10,82 @@
 
     <nav class="flex-grow-1 p-3">
         <div class="nav flex-column gap-2">
-            <div class="nav-item">
-                <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                    <i class="bi bi-speedometer2 me-2"></i> Dashboard
-                </NavLink>
-            </div>
-            <div class="nav-item">
-                <NavLink class="nav-link" href="attendance">
-                    <i class="bi bi-calendar-check me-2"></i> Anwesenheit
-                </NavLink>
-            </div>
-            <div class="nav-item">
-                <NavLink class="nav-link" href="youth-list">
-                    <i class="bi bi-people me-2"></i> Spieler & Daten
-                </NavLink>
-            </div>
-            <div class="nav-item">
-                <NavLink class="nav-link" href="statistics">
-                    <i class="bi bi-graph-up me-2"></i> Statistik
-                </NavLink>
-            </div>
+            <!-- Dashboard (alle Rollen außer Besucher) -->
+            @if (AuthService.IsAuthenticated && AuthService.CurrentRole != "Besucher")
+            {
+                <div class="nav-item">
+                    <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+                        <i class="bi bi-speedometer2 me-2"></i> Dashboard
+                    </NavLink>
+                </div>
+            }
+
+            <!-- Anwesenheit (Admin, Trainer) -->
+            @if (AuthService.IsAuthenticated && (AuthService.CurrentRole == "Admin" || AuthService.CurrentRole ==
+                        "Trainer"))
+            {
+                <div class="nav-item">
+                    <NavLink class="nav-link" href="attendance">
+                        <i class="bi bi-calendar-check me-2"></i> Anwesenheit
+                    </NavLink>
+                </div>
+            }
+
+            <!-- Spieler & Daten (Admin, Trainer) -->
+            @if (AuthService.IsAuthenticated && (AuthService.CurrentRole == "Admin" || AuthService.CurrentRole ==
+                        "Trainer"))
+            {
+                <div class="nav-item">
+                    <NavLink class="nav-link" href="youth-list">
+                        <i class="bi bi-people me-2"></i> Spieler & Daten
+                    </NavLink>
+                </div>
+            }
+
+            <!-- Statistik (alle Rollen außer Besucher) -->
+            @if (AuthService.IsAuthenticated && AuthService.CurrentRole != "Besucher")
+            {
+                <div class="nav-item">
+                    <NavLink class="nav-link" href="statistics">
+                        <i class="bi bi-graph-up me-2"></i> Statistik
+                    </NavLink>
+                </div>
+            }
+
+            <!-- Besucher Seite (nur Besucher) -->
+            @if (AuthService.IsAuthenticated && AuthService.CurrentRole == "Besucher")
+            {
+                <div class="nav-item">
+                    <NavLink class="nav-link" href="visitor">
+                        <i class="bi bi-info-circle me-2"></i> Trainings-Info
+                    </NavLink>
+                </div>
+            }
         </div>
     </nav>
 
     <div class="p-3 border-top border-secondary mt-auto">
         <div class="nav flex-column">
-            <div class="nav-item">
-                <NavLink class="nav-link" href="settings">
-                    <i class="bi bi-gear me-2"></i> Einstellungen
-                </NavLink>
-            </div>
+            <!-- Settings (alle außer Admin und Besucher) -->
+            @if (AuthService.IsAuthenticated && AuthService.CurrentRole != "Admin" && AuthService.CurrentRole !=
+                        "Besucher")
+            {
+                <div class="nav-item">
+                    <NavLink class="nav-link" href="settings">
+                        <i class="bi bi-gear me-2"></i> Einstellungen
+                    </NavLink>
+                </div>
+            }
+
+            <!-- Benutzerverwaltung (nur Admin) -->
+            @if (AuthService.IsAuthenticated && AuthService.CurrentRole == "Admin")
+            {
+                <div class="nav-item">
+                    <NavLink class="nav-link" href="admin/users">
+                        <i class="bi bi-shield-lock me-2"></i> Benutzerverwaltung
+                    </NavLink>
+                </div>
+            }
         </div>
         <div class="text-center mt-3 text-white-50 small">
             &copy; @DateTime.Now.Year SV Hofkirchen
@@ -46,8 +93,17 @@
     </div>
 </div>
 
+@using SvHofkirchenWasm.Services
+@inject AuthService AuthService
+
 @code {
-    private bool collapseNavMenu = true;
-    private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
-    private void ToggleNavMenu() => collapseNavMenu = !collapseNavMenu;
+    protected override void OnInitialized()
+    {
+        AuthService.OnAuthStateChanged += StateHasChanged;
+    }
+
+    void IDisposable.Dispose()
+    {
+        AuthService.OnAuthStateChanged -= StateHasChanged;
+    }
 }

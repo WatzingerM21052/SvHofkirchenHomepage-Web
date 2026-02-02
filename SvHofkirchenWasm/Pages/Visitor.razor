@@ -1,0 +1,118 @@
+@page "/visitor"
+@using SvHofkirchenWasm.Services
+@inject AuthService AuthService
+@inject NavigationManager Navigation
+
+@if (!AuthService.IsAuthenticated)
+{
+    Navigation.NavigateTo("login");
+    return;
+}
+
+@if (AuthService.CurrentRole != "Besucher")
+{
+    <div class="alert alert-warning" role="alert">
+        Diese Seite ist nur für Besucher gedacht. Du hast Zugriff auf weitere Funktionen!
+    </div>
+    return;
+}
+
+<div class="container-fluid mt-5">
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="alert alert-info" role="alert">
+                <h4 class="alert-heading">
+                    <i class="bi bi-info-circle me-2"></i>Willkommen!
+                </h4>
+                <p class="mb-0">
+                    Du hast derzeit keinen vollständigen Zugriff auf das Portal.
+                    Um alle Funktionen nutzen zu können, wende dich bitte an einen Administrator.
+                </p>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-calendar3 me-2"></i>Nächstes Training
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <h6 class="text-muted">Zeitpunkt</h6>
+                            <p class="h5">
+                                <strong>Montag, 19:00 - 21:00 Uhr</strong>
+                            </p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <h6 class="text-muted">Ort</h6>
+                            <p class="h5">
+                                <strong>Pfarrsaal Hofkirchen</strong><br />
+                                <small class="text-muted">Schulstraße 5, 84167 Hofkirchen</small>
+                            </p>
+                        </div>
+                    </div>
+                    <hr />
+                    <p class="text-muted small mb-0">
+                        Nächstes Training am <strong>@DateTime.Now.AddDays(7).ToString("dd.MM.yyyy")
+                    </p>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-telephone me-2"></i>Kontaktdaten
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <h6 class="text-muted">Trainer</h6>
+                            <p>
+                                <strong>Max Mustermann</strong><br />
+                                <a href="mailto:trainer@example.com">trainer@example.com</a><br />
+                                <a href="tel:+491234567890">+49 123 4567890</a>
+                            </p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <h6 class="text-muted">Vereinskontakt</h6>
+                            <p>
+                                <strong>SV Hofkirchen</strong><br />
+                                <a href="mailto:info@sv-hofkirchen.de">info@sv-hofkirchen.de</a><br />
+                                <a href="tel:+491234567891">+49 123 4567891</a>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                </card>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="card bg-light">
+                    <div class="card-header bg-secondary text-white">
+                        <h5 class="mb-0">
+                            <i class="bi bi-shield-lock me-2"></i>Benutzer-Info
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="mb-2">
+                            <strong>Rolle:</strong>
+                            <span class="badge bg-secondary">@AuthService.CurrentRole</span>
+                        </p>
+                        <p class="mb-2">
+                            <strong>Benutzername:</strong>
+                            <code>@AuthService.CurrentUser?.UserName</code>
+                        </p>
+                        <p class="mb-0">
+                            <strong>Email:</strong>
+                            <code>@AuthService.CurrentUser?.Email</code>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+@code {
+}
