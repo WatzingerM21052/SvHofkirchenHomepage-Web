@@ -252,6 +252,9 @@ CreatedAt = DateTime.Now.AddDays(-30),
 LastLogin = DateTime.Now
 }
 };
+        
+        // Initiales Passwort für Admin-Benutzer setzen (wird in Produktion aus DB geladen)
+        UserPasswords[1] = "admin";
     }
 
     private void ShowCreateUserModal()
