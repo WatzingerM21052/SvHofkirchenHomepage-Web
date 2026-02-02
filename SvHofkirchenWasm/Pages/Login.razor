@@ -1,0 +1,104 @@
+@page "/login"
+@using SvHofkirchenWasm.Services
+@inject AuthService AuthService
+@inject NavigationManager Navigation
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-lg">
+                <div class="card-header bg-primary text-white text-center">
+                    <h3 class="mb-0">SV Hofkirchen - Login</h3>
+                </div>
+                <div class="card-body p-4">
+                    @if (!string.IsNullOrEmpty(ErrorMessage))
+                    {
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            @ErrorMessage
+                            <button type="button" class="btn-close" @onclick="@(() => ErrorMessage = "")"></button>
+                        </div>
+                    }
+
+                    <form @onsubmit="HandleLogin">
+                        <div class="mb-3">
+                            <label for="userName" class="form-label">Benutzername</label>
+                            <input 
+                                type="text" 
+                                class="form-control" 
+                                id="userName" 
+                                placeholder="Benutzername eingeben"
+                                @bind="UserName"
+                                disabled="@IsLoading" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Passwort</label>
+                            <input 
+                                type="password" 
+                                class="form-control" 
+                                id="password" 
+                                placeholder="Passwort eingeben"
+                                @bind="Password"
+                                disabled="@IsLoading" />
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100" disabled="@IsLoading">
+                            @if (IsLoading)
+                            {
+                                <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                <span>Wird angemeldet...</span>
+                            }
+                            else
+                            {
+                                <span>Anmelden</span>
+                            }
+                        </button>
+                    </form>
+
+                    <hr class="my-4" />
+
+                    <div class="alert alert-info small">
+                        <strong>Demo-Anmeldedaten:</strong><br />
+                        <strong>Benutzer:</strong> admin<br />
+                        <strong>Passwort:</strong> admin
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private string UserName = string.Empty;
+    private string Password = string.Empty;
+    private string ErrorMessage = string.Empty;
+    private bool IsLoading = false;
+
+    private async Task HandleLogin()
+    {
+        ErrorMessage = string.Empty;
+        IsLoading = true;
+
+        try
+        {
+            var result = await AuthService.LoginAsync(UserName, Password);
+            
+            if (result.Success)
+            {
+                Navigation.NavigateTo("/");
+            }
+            else
+            {
+                ErrorMessage = result.Message;
+            }
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Ein Fehler ist aufgetreten: {ex.Message}";
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+}

@@ -1,4 +1,7 @@
 ﻿@inherits LayoutComponentBase
+@using SvHofkirchenWasm.Services
+@inject AuthService AuthService
+@inject NavigationManager Navigation
 
 <div class="page">
     <div class="sidebar">
@@ -25,9 +28,47 @@
                             class="text-decoration-none text-muted small me-3 hover-primary">Impressum</a>
                         <a href="datenschutz"
                             class="text-decoration-none text-muted small hover-primary">Datenschutz</a>
+                        
+                        @if (AuthService.IsAuthenticated)
+                        {
+                            <span class="text-muted small me-3">|</span>
+                            <span class="text-muted small me-3">
+                                <strong>@AuthService.CurrentUser?.UserName</strong>
+                            </span>
+                            <button class="btn btn-link text-muted text-decoration-none small p-0"
+                                @onclick="HandleLogout"
+                                style="height: auto; line-height: normal;">
+                                Abmelden
+                            </button>
+                        }
+                        else
+                        {
+                            <span class="text-muted small me-3">|</span>
+                            <a href="login"
+                                class="text-decoration-none text-muted small hover-primary">Anmelden</a>
+                        }
                     </div>
                 </div>
             </div>
         </footer>
     </main>
 </div>
+
+@code {
+    private async Task HandleLogout()
+    {
+        await AuthService.LogoutAsync();
+        Navigation.NavigateTo("/", forceLoad: true);
+    }
+
+    protected override void OnInitialized()
+    {
+        AuthService.OnAuthStateChanged += StateHasChanged;
+    }
+
+    void IAsyncDisposable.DisposeAsync()
+    {
+        AuthService.OnAuthStateChanged -= StateHasChanged;
+        return default;
+    }
+}

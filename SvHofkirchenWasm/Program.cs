@@ -9,7 +9,8 @@ builder.RootComponents.Add<HeadOutlet>("head::after");
 
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
 
-// WICHTIG: Hier registrieren wir unseren DataService
+// Services registrieren
 builder.Services.AddScoped<YouthService>();
+builder.Services.AddScoped<AuthService>();
 
 await builder.Build().RunAsync();
