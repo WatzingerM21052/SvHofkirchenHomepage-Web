@@ -28,15 +28,14 @@
                             class="text-decoration-none text-muted small me-3 hover-primary">Impressum</a>
                         <a href="datenschutz"
                             class="text-decoration-none text-muted small hover-primary">Datenschutz</a>
-                        
+
                         @if (AuthService.IsAuthenticated)
                         {
                             <span class="text-muted small me-3">|</span>
                             <span class="text-muted small me-3">
                                 <strong>@AuthService.CurrentUser?.UserName</strong>
                             </span>
-                            <button class="btn btn-link text-muted text-decoration-none small p-0"
-                                @onclick="HandleLogout"
+                            <button class="btn btn-link text-muted text-decoration-none small p-0" @onclick="HandleLogout"
                                 style="height: auto; line-height: normal;">
                                 Abmelden
                             </button>
@@ -44,8 +43,7 @@
                         else
                         {
                             <span class="text-muted small me-3">|</span>
-                            <a href="login"
-                                class="text-decoration-none text-muted small hover-primary">Anmelden</a>
+                            <a href="login" class="text-decoration-none text-muted small hover-primary">Anmelden</a>
                         }
                     </div>
                 </div>
@@ -66,9 +64,8 @@
         AuthService.OnAuthStateChanged += StateHasChanged;
     }
 
-    void IAsyncDisposable.DisposeAsync()
+    async ValueTask IAsyncDisposable.DisposeAsync()
     {
         AuthService.OnAuthStateChanged -= StateHasChanged;
-        return default;
     }
 }
