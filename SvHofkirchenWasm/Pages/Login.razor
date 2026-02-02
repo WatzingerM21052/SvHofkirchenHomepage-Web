@@ -22,24 +22,14 @@
                     <form @onsubmit="HandleLogin">
                         <div class="mb-3">
                             <label for="userName" class="form-label">Benutzername</label>
-                            <input 
-                                type="text" 
-                                class="form-control" 
-                                id="userName" 
-                                placeholder="Benutzername eingeben"
-                                @bind="UserName"
-                                disabled="@IsLoading" />
+                            <input type="text" class="form-control" id="userName" placeholder="Benutzername eingeben"
+                                @bind="UserName" disabled="@IsLoading" />
                         </div>
 
                         <div class="mb-3">
                             <label for="password" class="form-label">Passwort</label>
-                            <input 
-                                type="password" 
-                                class="form-control" 
-                                id="password" 
-                                placeholder="Passwort eingeben"
-                                @bind="Password"
-                                disabled="@IsLoading" />
+                            <input type="password" class="form-control" id="password" placeholder="Passwort eingeben"
+                                @bind="Password" disabled="@IsLoading" />
                         </div>
 
                         <button type="submit" class="btn btn-primary w-100" disabled="@IsLoading">
@@ -82,10 +72,10 @@
         try
         {
             var result = await AuthService.LoginAsync(UserName, Password);
-            
+
             if (result.Success)
             {
-                Navigation.NavigateTo("/");
+                Navigation.NavigateTo("");
             }
             else
             {
