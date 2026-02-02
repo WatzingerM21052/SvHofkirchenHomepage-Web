@@ -1,7 +1,24 @@
 ﻿@page "/"
+@using SvHofkirchenWasm.Services
 @inject YouthService Service
+@inject AuthService AuthService
+@inject NavigationManager Navigation
 
 <PageTitle>SV Hofkirchen - Dashboard</PageTitle>
+
+@if (!AuthService.IsAuthenticated)
+{
+    Navigation.NavigateTo("login");
+    return;
+}
+
+@if (AuthService.CurrentRole == "Besucher")
+{
+    <div class="alert alert-danger" role="alert">
+        <strong>Zugriff verweigert!</strong> Diese Seite ist nicht für Besucher zugänglich.
+    </div>
+    return;
+}
 
 @if (!Service.IsInitialized)
 {

@@ -1,7 +1,24 @@
 @page "/attendance"
+@using SvHofkirchenWasm.Services
+@using SvHofkirchenWasm.Models
 @inject YouthService Service
 @inject IJSRuntime JS
-@using SvHofkirchenWasm.Models
+@inject AuthService AuthService
+@inject NavigationManager Navigation
+
+@if (!AuthService.IsAuthenticated)
+{
+    Navigation.NavigateTo("login");
+    return;
+}
+
+@if (AuthService.CurrentRole != "Admin" && AuthService.CurrentRole != "Trainer")
+{
+    <div class="alert alert-danger" role="alert">
+        <strong>Zugriff verweigert!</strong> Diese Seite ist nur für Administratoren und Trainer zugänglich.
+    </div>
+    return;
+}
 
 <div class="container-fluid p-4">
     <div class="glass-card p-4 mb-4">

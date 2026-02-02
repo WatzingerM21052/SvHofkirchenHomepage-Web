@@ -1,23 +1,23 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\matth\\OneDrive\\Desktop\\Schach SL und SV\\SvHofkirchenHomepage-Web\\SvHofkirchenWasm\\SvHofkirchenWasm.csproj": {}
+    "C:\\Users\\stefa_6mlnk3e\\OneDrive\\Desktop\\Schach\\Webseiten SL und SV\\SvHofkirchenHomepage-Web\\SvHofkirchenWasm\\SvHofkirchenWasm.csproj": {}
   },
   "projects": {
-    "C:\\Users\\matth\\OneDrive\\Desktop\\Schach SL und SV\\SvHofkirchenHomepage-Web\\SvHofkirchenWasm\\SvHofkirchenWasm.csproj": {
+    "C:\\Users\\stefa_6mlnk3e\\OneDrive\\Desktop\\Schach\\Webseiten SL und SV\\SvHofkirchenHomepage-Web\\SvHofkirchenWasm\\SvHofkirchenWasm.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\matth\\OneDrive\\Desktop\\Schach SL und SV\\SvHofkirchenHomepage-Web\\SvHofkirchenWasm\\SvHofkirchenWasm.csproj",
+        "projectUniqueName": "C:\\Users\\stefa_6mlnk3e\\OneDrive\\Desktop\\Schach\\Webseiten SL und SV\\SvHofkirchenHomepage-Web\\SvHofkirchenWasm\\SvHofkirchenWasm.csproj",
         "projectName": "SvHofkirchenWasm",
-        "projectPath": "C:\\Users\\matth\\OneDrive\\Desktop\\Schach SL und SV\\SvHofkirchenHomepage-Web\\SvHofkirchenWasm\\SvHofkirchenWasm.csproj",
-        "packagesPath": "C:\\Users\\matth\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\matth\\OneDrive\\Desktop\\Schach SL und SV\\SvHofkirchenHomepage-Web\\SvHofkirchenWasm\\obj\\",
+        "projectPath": "C:\\Users\\stefa_6mlnk3e\\OneDrive\\Desktop\\Schach\\Webseiten SL und SV\\SvHofkirchenHomepage-Web\\SvHofkirchenWasm\\SvHofkirchenWasm.csproj",
+        "packagesPath": "C:\\Users\\stefa_6mlnk3e\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\stefa_6mlnk3e\\OneDrive\\Desktop\\Schach\\Webseiten SL und SV\\SvHofkirchenHomepage-Web\\SvHofkirchenWasm\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
-          "C:\\Users\\matth\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\stefa_6mlnk3e\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
@@ -26,7 +26,6 @@
         ],
         "sources": {
           "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
-          "C:\\Program Files\\dotnet\\library-packs": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
@@ -95,6 +94,12 @@
           ],
           "assetTargetFallback": true,
           "warn": true,
+          "downloadDependencies": [
+            {
+              "name": "Microsoft.NETCore.App.Runtime.Mono.browser-wasm",
+              "version": "[10.0.2, 10.0.2]"
+            }
+          ],
           "frameworkReferences": {
             "Microsoft.NETCore.App": {
               "privateAssets": "all"

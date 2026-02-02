@@ -1,6 +1,23 @@
 @page "/youth-list"
 @using SvHofkirchenWasm.Models
+@using SvHofkirchenWasm.Services
 @inject YouthService Service
+@inject AuthService AuthService
+@inject NavigationManager Navigation
+
+@if (!AuthService.IsAuthenticated)
+{
+    Navigation.NavigateTo("login");
+    return;
+}
+
+@if (AuthService.CurrentRole != "Admin" && AuthService.CurrentRole != "Trainer")
+{
+    <div class="alert alert-danger" role="alert">
+        <strong>Zugriff verweigert!</strong> Diese Seite ist nur für Administratoren und Trainer zugänglich.
+    </div>
+    return;
+}
 
 <div class="container-fluid p-4">
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-4 gap-3">

@@ -1,5 +1,22 @@
 @page "/settings"
+@using SvHofkirchenWasm.Services
 @inject YouthService Service
+@inject AuthService AuthService
+@inject NavigationManager Navigation
+
+@if (!AuthService.IsAuthenticated)
+{
+    Navigation.NavigateTo("login");
+    return;
+}
+
+@if (AuthService.CurrentRole == "Besucher")
+{
+    <div class="alert alert-danger" role="alert">
+        <strong>Zugriff verweigert!</strong> Diese Seite ist nicht für Besucher zugänglich.
+    </div>
+    return;
+}
 
 <div class="container p-4">
     <div class="d-flex align-items-center mb-4">
