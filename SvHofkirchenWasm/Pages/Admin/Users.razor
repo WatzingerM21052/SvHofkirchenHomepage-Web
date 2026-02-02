@@ -125,7 +125,7 @@
                         </div>
                         @if (EditingUser.UserId == 0)
                         {
-                            @if (string.IsNullOrEmpty(GeneratedPassword))
+                            @if (string.IsNullOrEmpty(CurrentPassword))
                             {
                                 <div class="alert alert-info small">
                                     <i class="bi bi-key-fill me-2"></i>
@@ -142,14 +142,14 @@
                                         <strong>Generiertes Passwort:</strong>
                                     </div>
                                     <div class="input-group">
-                                        <input type="text" class="form-control font-monospace fw-bold" value="@GeneratedPassword" readonly />
-                                        <button class="btn btn-outline-secondary" type="button" @onclick="() => CopyToClipboard(GeneratedPassword)">
+                                        <input type="text" class="form-control font-monospace fw-bold" value="@CurrentPassword" readonly />
+                                        <button class="btn btn-outline-secondary" type="button" @onclick="() => CopyToClipboard(CurrentPassword)">
                                             <i class="bi bi-clipboard"></i> Kopieren
                                         </button>
                                     </div>
                                     <small class="text-muted mt-2 d-block">
                                         <i class="bi bi-exclamation-triangle me-1"></i>
-                                        Bitte speichern Sie dieses Passwort jetzt! Es wird nach dem Schließen nicht mehr angezeigt.
+                                        Bitte speichern Sie dieses Passwort jetzt! Es bleibt auch nach dem Schließen beim erneuten Öffnen dieses Benutzers sichtbar.
                                     </small>
                                 </div>
                             }
@@ -164,47 +164,49 @@
                             <div class="mb-3">
                                 <label class="form-label fw-bold">Passwort-Verwaltung</label>
                                 
-                                @if (!string.IsNullOrEmpty(GeneratedPassword))
+                                @* Aktuelles Passwort immer anzeigen wenn vorhanden *@
+                                @if (!string.IsNullOrEmpty(CurrentPassword))
                                 {
-                                    <div class="alert alert-success">
-                                        <div class="mb-2">
-                                            <strong><i class="bi bi-check-circle-fill me-2"></i>Neues Passwort generiert:</strong>
-                                        </div>
+                                    <div class="mb-3">
+                                        <label class="form-label small text-muted">Aktuelles Passwort:</label>
                                         <div class="input-group">
-                                            <input type="text" class="form-control font-monospace fw-bold" value="@GeneratedPassword" readonly />
-                                            <button class="btn btn-outline-secondary" type="button" @onclick="() => CopyToClipboard(GeneratedPassword)">
+                                            <input type="text" class="form-control font-monospace" value="@CurrentPassword" readonly />
+                                            <button class="btn btn-outline-secondary" type="button" @onclick="() => CopyToClipboard(CurrentPassword)">
                                                 <i class="bi bi-clipboard"></i> Kopieren
                                             </button>
                                         </div>
-                                        <small class="text-muted mt-2 d-block">
-                                            <i class="bi bi-exclamation-triangle me-1"></i>
-                                            Bitte speichern Sie dieses Passwort! Es wird nach dem Schließen nicht mehr angezeigt.
-                                        </small>
                                     </div>
                                 }
-                                else
+                                
+                                @* Buttons zum Ändern *@
+                                <div class="btn-group w-100 mb-3" role="group">
+                                    <button type="button" class="btn btn-outline-primary" @onclick="GenerateNewPasswordForUser">
+                                        <i class="bi bi-arrow-repeat me-2"></i>Neues Passwort generieren
+                                    </button>
+                                    <button type="button" class="btn btn-outline-secondary" @onclick="() => ShowManualPassword = !ShowManualPassword">
+                                        <i class="bi bi-pencil-square me-2"></i>Manuell festlegen
+                                    </button>
+                                </div>
+                                
+                                @if (ShowManualPassword)
                                 {
-                                    <div class="btn-group w-100 mb-3" role="group">
-                                        <button type="button" class="btn btn-outline-primary" @onclick="GenerateNewPassword">
-                                            <i class="bi bi-arrow-repeat me-2"></i>Neues Passwort generieren
-                                        </button>
-                                        <button type="button" class="btn btn-outline-secondary" @onclick="() => ShowManualPassword = !ShowManualPassword">
-                                            <i class="bi bi-pencil-square me-2"></i>Manuell festlegen
-                                        </button>
-                                    </div>
-                                    
-                                    @if (ShowManualPassword)
-                                    {
-                                        <div class="mb-3">
-                                            <label for="manualPassword" class="form-label small">Benutzerdefiniertes Passwort</label>
-                                            <input type="text" class="form-control font-monospace" id="manualPassword" 
-                                                   @bind="ManualPassword" placeholder="Mindestens 8 Zeichen" />
-                                            <small class="form-text text-muted">
-                                                <i class="bi bi-shield-check me-1"></i>
-                                                Empfohlen: Mindestens 8 Zeichen mit Groß-/Kleinbuchstaben, Zahlen und Sonderzeichen
-                                            </small>
+                                    <div class="mb-3">
+                                        <label for="manualPassword" class="form-label small">Benutzerdefiniertes Passwort</label>
+                                        <input type="text" class="form-control font-monospace" id="manualPassword" 
+                                               @bind="ManualPassword" placeholder="Mindestens 8 Zeichen" />
+                                        <small class="form-text text-muted">
+                                            <i class="bi bi-shield-check me-1"></i>
+                                            Empfohlen: Mindestens 8 Zeichen mit Groß-/Kleinbuchstaben, Zahlen und Sonderzeichen
+                                        </small>
+                                        <div class="mt-2">
+                                            <button type="button" class="btn btn-sm btn-primary" @onclick="ApplyManualPassword">
+                                                <i class="bi bi-check2 me-1"></i>Passwort übernehmen
+                                            </button>
+                                            <button type="button" class="btn btn-sm btn-secondary" @onclick="() => { ManualPassword = null; ShowManualPassword = false; }">
+                                                Abbrechen
+                                            </button>
                                         </div>
-                                    }
+                                    </div>
                                 }
                             </div>
                         }
@@ -223,9 +225,11 @@
     private List<User> UserList = new();
     private bool ShowModal = false;
     private User EditingUser = new();
-    private string? GeneratedPassword = null;
+    private Dictionary<int, string> UserPasswords = new(); // Passwort pro Benutzer-ID
+    private string? CurrentPassword = null; // Aktuelles Passwort für den bearbeiteten Benutzer
     private string? ManualPassword = null;
     private bool ShowManualPassword = false;
+    private bool IsNewlyCreated = false; // Flag für "gerade erstellt"
 
     protected override void OnInitialized()
     {
@@ -253,6 +257,10 @@ LastLogin = DateTime.Now
     private void ShowCreateUserModal()
     {
         EditingUser = new User { UserId = 0, CreatedAt = DateTime.Now };
+        CurrentPassword = null;
+        ManualPassword = null;
+        ShowManualPassword = false;
+        IsNewlyCreated = false;
         ShowModal = true;
     }
 
@@ -268,6 +276,12 @@ LastLogin = DateTime.Now
             CreatedAt = user.CreatedAt,
             LastLogin = user.LastLogin
         };
+        
+        // Passwort aus Dictionary laden wenn vorhanden
+        CurrentPassword = UserPasswords.ContainsKey(user.UserId) ? UserPasswords[user.UserId] : null;
+        ManualPassword = null;
+        ShowManualPassword = false;
+        IsNewlyCreated = false;
         ShowModal = true;
     }
 
@@ -276,9 +290,15 @@ LastLogin = DateTime.Now
         if (EditingUser.UserId == 0)
         {
             // Neuer Benutzer - Passwort generieren
-            GeneratedPassword = GeneratePassword();
+            var newPassword = GeneratePassword();
             EditingUser.UserId = UserList.Max(u => u.UserId) + 1;
+            
+            // Passwort für diesen Benutzer speichern
+            UserPasswords[EditingUser.UserId] = newPassword;
+            CurrentPassword = newPassword;
+            
             UserList.Add(EditingUser);
+            IsNewlyCreated = true;
             // TODO: API-Call zum Speichern mit Passwort
             // Hinweis: In Produktion würde das Passwort gehasht gespeichert
         }
@@ -291,19 +311,14 @@ LastLogin = DateTime.Now
             existingUser.Role = EditingUser.Role;
             existingUser.IsActive = EditingUser.IsActive;
             
-            // Passwort-Update wenn nötig
-            if (!string.IsNullOrEmpty(ManualPassword))
+            // Passwort wurde geändert?
+            if (!string.IsNullOrEmpty(CurrentPassword) && UserPasswords.ContainsKey(EditingUser.UserId))
             {
-                // Manuelles Passwort wurde gesetzt
-                GeneratedPassword = ManualPassword;
-                // TODO: API-Call zum Speichern des neuen Passworts
+                UserPasswords[EditingUser.UserId] = CurrentPassword;
             }
-            else if (string.IsNullOrEmpty(GeneratedPassword))
-            {
-                // Kein neues Passwort - Modal schließen
-                CloseModal();
-            }
-            // Wenn GeneratedPassword gesetzt ist, bleibt Modal offen zur Anzeige
+            
+            CloseModal();
+            // TODO: API-Call zum Speichern
         }
     }
 
@@ -323,6 +338,10 @@ LastLogin = DateTime.Now
     {
         ShowModal = false;
         EditingUser = new();
+        ManualPassword = null;
+        ShowManualPassword = false;
+        IsNewlyCreated = false;
+        // CurrentPassword NICHT zurücksetzen - bleibt für später erhalten
     }
 
     private string GetRoleBadgeStyle(string role) => role switch
@@ -355,11 +374,21 @@ LastLogin = DateTime.Now
         return new string(password.OrderBy(x => random.Next()).ToArray());
     }
 
-    private void GenerateNewPassword()
+    private void GenerateNewPasswordForUser()
     {
-        GeneratedPassword = GeneratePassword();
+        CurrentPassword = GeneratePassword();
         ManualPassword = null;
         ShowManualPassword = false;
+    }
+    
+    private void ApplyManualPassword()
+    {
+        if (!string.IsNullOrEmpty(ManualPassword))
+        {
+            CurrentPassword = ManualPassword;
+            ManualPassword = null;
+            ShowManualPassword = false;
+        }
     }
 
     private async Task CopyToClipboard(string text)
