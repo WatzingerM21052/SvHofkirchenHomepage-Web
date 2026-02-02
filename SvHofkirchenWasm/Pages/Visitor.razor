@@ -54,7 +54,7 @@
                     </div>
                     <hr />
                     <p class="text-muted small mb-0">
-                        Nächstes Training am <strong>@DateTime.Now.AddDays(7).ToString("dd.MM.yyyy")
+                        Nächstes Training am <strong>@DateTime.Now.AddDays(7).ToString("dd.MM.yyyy")</strong>
                     </p>
                 </div>
             </div>
@@ -85,34 +85,34 @@
                         </div>
                     </div>
                 </div>
-                </card>
             </div>
+        </div>
 
-            <div class="col-lg-4">
-                <div class="card bg-light">
-                    <div class="card-header bg-secondary text-white">
-                        <h5 class="mb-0">
-                            <i class="bi bi-shield-lock me-2"></i>Benutzer-Info
-                        </h5>
-                    </div>
-                    <div class="card-body">
-                        <p class="mb-2">
-                            <strong>Rolle:</strong>
-                            <span class="badge bg-secondary">@AuthService.CurrentRole</span>
-                        </p>
-                        <p class="mb-2">
-                            <strong>Benutzername:</strong>
-                            <code>@AuthService.CurrentUser?.UserName</code>
-                        </p>
-                        <p class="mb-0">
-                            <strong>Email:</strong>
-                            <code>@AuthService.CurrentUser?.Email</code>
-                        </p>
-                    </div>
+        <div class="col-lg-4">
+            <div class="card bg-light">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-shield-lock me-2"></i>Benutzer-Info
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="mb-2">
+                        <strong>Rolle:</strong>
+                        <span class="badge bg-secondary">@AuthService.CurrentRole</span>
+                    </p>
+                    <p class="mb-2">
+                        <strong>Benutzername:</strong>
+                        <code>@AuthService.CurrentUser?.UserName</code>
+                    </p>
+                    <p class="mb-0">
+                        <strong>Email:</strong>
+                        <code>@AuthService.CurrentUser?.Email</code>
+                    </p>
                 </div>
             </div>
         </div>
     </div>
+</div>
 
 @code {
 }

@@ -26,7 +26,7 @@
         </div>
     </div>
 
-    @if (Users.Count == 0)
+    @if (UserList.Count == 0)
     {
         <div class="alert alert-info" role="alert">
             Noch keine Benutzer erstellt.
@@ -47,7 +47,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var user in Users)
+                    @foreach (var user in UserList)
                     {
                         <tr>
                             <td><strong>@user.UserName</strong></td>
@@ -137,7 +137,7 @@
 }
 
 @code {
-    private List<User> Users = new();
+    private List<User> UserList = new();
     private bool ShowModal = false;
     private User EditingUser = new();
 
@@ -149,7 +149,7 @@
     private void LoadUsers()
     {
         // TODO: Von API laden
-        Users = new List<User>
+        UserList = new List<User>
 {
 new User
 {
@@ -190,13 +190,13 @@ LastLogin = DateTime.Now
         if (EditingUser.UserId == 0)
         {
             // Neuer Benutzer
-            EditingUser.UserId = Users.Max(u => u.UserId) + 1;
-            Users.Add(EditingUser);
+            EditingUser.UserId = UserList.Max(u => u.UserId) + 1;
+            UserList.Add(EditingUser);
         }
         else
         {
             // Benutzer aktualisieren
-            var existingUser = Users.First(u => u.UserId == EditingUser.UserId);
+            var existingUser = UserList.First(u => u.UserId == EditingUser.UserId);
             existingUser.UserName = EditingUser.UserName;
             existingUser.Email = EditingUser.Email;
             existingUser.Role = EditingUser.Role;
@@ -215,7 +215,7 @@ LastLogin = DateTime.Now
             return;
         }
 
-        Users.RemoveAll(u => u.UserId == userId);
+        UserList.RemoveAll(u => u.UserId == userId);
         // TODO: API-Call zum Löschen
     }
 

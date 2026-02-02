@@ -101,9 +101,4 @@
     {
         AuthService.OnAuthStateChanged += StateHasChanged;
     }
-
-    void IDisposable.Dispose()
-    {
-        AuthService.OnAuthStateChanged -= StateHasChanged;
-    }
 }
