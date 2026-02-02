@@ -64,7 +64,12 @@
         AuthService.OnAuthStateChanged += StateHasChanged;
     }
 
-    async ValueTask IAsyncDisposable.DisposeAsync()
+    protected override async ValueTask OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+    }
+
+    void IDisposable.Dispose()
     {
         AuthService.OnAuthStateChanged -= StateHasChanged;
     }
