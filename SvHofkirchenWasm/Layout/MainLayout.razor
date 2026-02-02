@@ -25,16 +25,18 @@
                     </div>
                     <div class="col-md-6 text-center text-md-end">
                         <a href="impressum"
-                            class="text-decoration-none text-muted small me-3 hover-primary">Impressum</a>
+                            class="text-decoration-none text-muted small me-2 hover-primary">Impressum</a>
+                        <span class="text-muted small mx-2">|</span>
                         <a href="datenschutz"
                             class="text-decoration-none text-muted small hover-primary">Datenschutz</a>
 
                         @if (AuthService.IsAuthenticated)
                         {
-                            <span class="text-muted small me-3">|</span>
-                            <span class="text-muted small me-3">
+                            <span class="text-muted small mx-2">|</span>
+                            <span class="text-muted small me-2">
                                 <strong>@AuthService.CurrentUser?.UserName</strong>
                             </span>
+                            <span class="text-muted small mx-2">|</span>
                             <button class="btn btn-link text-muted text-decoration-none small p-0" @onclick="HandleLogout"
                                 style="height: auto; line-height: normal;">
                                 Abmelden
@@ -42,7 +44,7 @@
                         }
                         else
                         {
-                            <span class="text-muted small me-3">|</span>
+                            <span class="text-muted small mx-2">|</span>
                             <a href="login" class="text-decoration-none text-muted small hover-primary">Anmelden</a>
                         }
                     </div>
@@ -56,7 +58,7 @@
     private async Task HandleLogout()
     {
         await AuthService.LogoutAsync();
-        Navigation.NavigateTo("/", forceLoad: true);
+        Navigation.NavigateTo("https://watzingerm21052.github.io/SvHofkirchenHomepage-Web/", forceLoad: true);
     }
 
     protected override void OnInitialized()

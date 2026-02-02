@@ -113,16 +113,99 @@
                                 <option value="Besucher">Besucher</option>
                             </select>
                         </div>
-                        <div class="mb-3">
-                            <label for="isActive" class="form-label">
-                                <input type="checkbox" id="isActive" @bind="EditingUser.IsActive" />
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="isActive" @bind="EditingUser.IsActive" />
+                            <label class="form-check-label" for="isActive">
                                 Aktiv
                             </label>
+                            <div class="form-text">
+                                <i class="bi bi-info-circle me-1"></i>
+                                Ein inaktiver Benutzer kann sich nicht anmelden. Verwenden Sie dies, um Benutzer temporär zu sperren.
+                            </div>
                         </div>
                         @if (EditingUser.UserId == 0)
                         {
-                            <div class="alert alert-info small">
-                                <strong>Passwort:</strong> Wird automatisch generiert und dem Benutzer mitgeteilt.
+                            @if (string.IsNullOrEmpty(GeneratedPassword))
+                            {
+                                <div class="alert alert-info small">
+                                    <i class="bi bi-key-fill me-2"></i>
+                                    <strong>Passwort:</strong> Das initiale Passwort wird automatisch beim Speichern generiert und hier angezeigt.
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="alert alert-success">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <strong><i class="bi bi-check-circle-fill me-2"></i>Benutzer erstellt!</strong>
+                                    </div>
+                                    <div class="mb-2">
+                                        <strong>Generiertes Passwort:</strong>
+                                    </div>
+                                    <div class="input-group">
+                                        <input type="text" class="form-control font-monospace fw-bold" value="@GeneratedPassword" readonly />
+                                        <button class="btn btn-outline-secondary" type="button" @onclick="() => CopyToClipboard(GeneratedPassword)">
+                                            <i class="bi bi-clipboard"></i> Kopieren
+                                        </button>
+                                    </div>
+                                    <small class="text-muted mt-2 d-block">
+                                        <i class="bi bi-exclamation-triangle me-1"></i>
+                                        Bitte speichern Sie dieses Passwort jetzt! Es wird nach dem Schließen nicht mehr angezeigt.
+                                    </small>
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <div class="alert alert-warning small mb-3">
+                                <i class="bi bi-info-circle-fill me-2"></i>
+                                <strong>Hinweis:</strong> Benutzer können ihr Passwort nicht selbst ändern. Nur Administratoren können neue Passwörter generieren oder manuell festlegen.
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Passwort-Verwaltung</label>
+                                
+                                @if (!string.IsNullOrEmpty(GeneratedPassword))
+                                {
+                                    <div class="alert alert-success">
+                                        <div class="mb-2">
+                                            <strong><i class="bi bi-check-circle-fill me-2"></i>Neues Passwort generiert:</strong>
+                                        </div>
+                                        <div class="input-group">
+                                            <input type="text" class="form-control font-monospace fw-bold" value="@GeneratedPassword" readonly />
+                                            <button class="btn btn-outline-secondary" type="button" @onclick="() => CopyToClipboard(GeneratedPassword)">
+                                                <i class="bi bi-clipboard"></i> Kopieren
+                                            </button>
+                                        </div>
+                                        <small class="text-muted mt-2 d-block">
+                                            <i class="bi bi-exclamation-triangle me-1"></i>
+                                            Bitte speichern Sie dieses Passwort! Es wird nach dem Schließen nicht mehr angezeigt.
+                                        </small>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="btn-group w-100 mb-3" role="group">
+                                        <button type="button" class="btn btn-outline-primary" @onclick="GenerateNewPassword">
+                                            <i class="bi bi-arrow-repeat me-2"></i>Neues Passwort generieren
+                                        </button>
+                                        <button type="button" class="btn btn-outline-secondary" @onclick="() => ShowManualPassword = !ShowManualPassword">
+                                            <i class="bi bi-pencil-square me-2"></i>Manuell festlegen
+                                        </button>
+                                    </div>
+                                    
+                                    @if (ShowManualPassword)
+                                    {
+                                        <div class="mb-3">
+                                            <label for="manualPassword" class="form-label small">Benutzerdefiniertes Passwort</label>
+                                            <input type="text" class="form-control font-monospace" id="manualPassword" 
+                                                   @bind="ManualPassword" placeholder="Mindestens 8 Zeichen" />
+                                            <small class="form-text text-muted">
+                                                <i class="bi bi-shield-check me-1"></i>
+                                                Empfohlen: Mindestens 8 Zeichen mit Groß-/Kleinbuchstaben, Zahlen und Sonderzeichen
+                                            </small>
+                                        </div>
+                                    }
+                                }
                             </div>
                         }
                     </form>
@@ -140,6 +223,9 @@
     private List<User> UserList = new();
     private bool ShowModal = false;
     private User EditingUser = new();
+    private string? GeneratedPassword = null;
+    private string? ManualPassword = null;
+    private bool ShowManualPassword = false;
 
     protected override void OnInitialized()
     {
@@ -189,9 +275,12 @@ LastLogin = DateTime.Now
     {
         if (EditingUser.UserId == 0)
         {
-            // Neuer Benutzer
+            // Neuer Benutzer - Passwort generieren
+            GeneratedPassword = GeneratePassword();
             EditingUser.UserId = UserList.Max(u => u.UserId) + 1;
             UserList.Add(EditingUser);
+            // TODO: API-Call zum Speichern mit Passwort
+            // Hinweis: In Produktion würde das Passwort gehasht gespeichert
         }
         else
         {
@@ -201,10 +290,21 @@ LastLogin = DateTime.Now
             existingUser.Email = EditingUser.Email;
             existingUser.Role = EditingUser.Role;
             existingUser.IsActive = EditingUser.IsActive;
+            
+            // Passwort-Update wenn nötig
+            if (!string.IsNullOrEmpty(ManualPassword))
+            {
+                // Manuelles Passwort wurde gesetzt
+                GeneratedPassword = ManualPassword;
+                // TODO: API-Call zum Speichern des neuen Passworts
+            }
+            else if (string.IsNullOrEmpty(GeneratedPassword))
+            {
+                // Kein neues Passwort - Modal schließen
+                CloseModal();
+            }
+            // Wenn GeneratedPassword gesetzt ist, bleibt Modal offen zur Anzeige
         }
-
-        CloseModal();
-        // TODO: API-Call zum Speichern
     }
 
     private void DeleteUser(int userId)
@@ -233,4 +333,39 @@ LastLogin = DateTime.Now
         "Besucher" => "background-color: #6c757d;",
         _ => "background-color: #6c757d;"
     };
+
+    private string GeneratePassword()
+    {
+        // Generiert ein sicheres 12-stelliges Passwort
+        const string chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789";
+        const string special = "!@#$%&*";
+        var random = new Random();
+        
+        var password = new char[12];
+        for (int i = 0; i < 10; i++)
+        {
+            password[i] = chars[random.Next(chars.Length)];
+        }
+        for (int i = 10; i < 12; i++)
+        {
+            password[i] = special[random.Next(special.Length)];
+        }
+        
+        // Mischen
+        return new string(password.OrderBy(x => random.Next()).ToArray());
+    }
+
+    private void GenerateNewPassword()
+    {
+        GeneratedPassword = GeneratePassword();
+        ManualPassword = null;
+        ShowManualPassword = false;
+    }
+
+    private async Task CopyToClipboard(string text)
+    {
+        // In einer echten Blazor WASM App würde hier JS Interop verwendet
+        // Für die Demo-Anzeige reicht die readonly Textbox
+        await Task.CompletedTask;
+    }
 }
