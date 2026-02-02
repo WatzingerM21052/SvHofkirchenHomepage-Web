@@ -170,12 +170,42 @@ public class YouthService
     public async Task ImportDataAsync(IBrowserFile file)
     {
         using var stream = file.OpenReadStream(maxAllowedSize: 1024 * 1024 * 10);
-        var root = await JsonSerializer.DeserializeAsync<YouthDataRoot>(stream);
-        if (root != null)
+        
+        // Versuche erst das neue Format (Members/Presences)
+        try
         {
-            YouthMembers = root.Members ?? new();
-            Presences = root.Presences ?? new();
-            await SaveToLocalStorage();
+            var root = await JsonSerializer.DeserializeAsync<YouthDataRoot>(stream);
+            if (root != null && root.Members != null && root.Members.Count > 0)
+            {
+                YouthMembers = root.Members;
+                Presences = root.Presences ?? new();
+                await SaveToLocalStorage();
+                NotifyStateChanged();
+                return;
+            }
+        }
+        catch
+        {
+            // Wenn das fehlschlägt, versuche altes Format
+            stream.Position = 0;
+        }
+        
+        // Fallback: Altes Format (Member/YouthPresence)
+        try
+        {
+            var legacy = await JsonSerializer.DeserializeAsync<LegacyDatabase>(stream);
+            if (legacy != null && legacy.Member != null)
+            {
+                YouthMembers = legacy.Member.Where(m => m.YouthStatus == 1).ToList();
+                Presences = legacy.YouthPresence ?? new();
+                await SaveToLocalStorage();
+                NotifyStateChanged();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Import-Fehler: {ex.Message}");
+            throw;
         }
     }
 
