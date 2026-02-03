@@ -1,7 +1,5 @@
 using System.Net.Http.Json;
-using System.Text.Json;
 using Microsoft.AspNetCore.Components.Forms;
-using Microsoft.JSInterop;
 using SvHofkirchenWasm.Models;
 
 namespace SvHofkirchenWasm.Services;
@@ -9,21 +7,16 @@ namespace SvHofkirchenWasm.Services;
 public class YouthService
 {
     private readonly HttpClient _http;
-    private readonly IJSRuntime _js;
     
-    // Version erhöht -> Erzwingt Neu-Laden der Daten beim nächsten Start
-    private const string LocalStorageKey = "SvHofkirchen_YouthData_V6_AgeFix"; 
-
     public List<MemberDto> YouthMembers { get; private set; } = new();
     public List<PresenceDto> Presences { get; private set; } = new();
     public bool IsInitialized { get; private set; }
 
     public event Action? OnChange;
 
-    public YouthService(HttpClient http, IJSRuntime js)
+    public YouthService(HttpClient http)
     {
         _http = http;
-        _js = js;
     }
 
     public async Task InitializeAsync()
@@ -32,24 +25,18 @@ public class YouthService
 
         try
         {
-            string? localData = null;
-            if (await IsStorageAvailableAsync())
+            // GET Request an Cloudflare Worker
+            var root = await _http.GetFromJsonAsync<YouthDataRoot>("api/youth");
+            
+            if (root != null)
             {
-                localData = await _js.InvokeAsync<string?>("storageHelper.getItem", LocalStorageKey);
-            }
-            if (!string.IsNullOrEmpty(localData))
-            {
-                var root = JsonSerializer.Deserialize<YouthDataRoot>(localData);
-                if (root != null && root.Members != null && root.Members.Count > 0)
-                {
-                    YouthMembers = root.Members;
-                    Presences = root.Presences ?? new();
-                }
+                YouthMembers = root.Members ?? new();
+                Presences = root.Presences ?? new();
             }
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Fehler beim Laden der Jugenddaten: {ex.Message}");
+            Console.WriteLine($"Fehler beim Laden der API-Daten: {ex.Message}");
         }
 
         IsInitialized = true;
@@ -59,11 +46,13 @@ public class YouthService
     // --- CRUD ---
     public async Task AddMemberAsync(MemberDto member)
     {
+        // Einfache ID-Generierung für die UI
         int newId = YouthMembers.Any() ? YouthMembers.Max(m => m.MemberId) + 1 : 1;
         member.MemberId = newId;
         member.YouthStatus = 1;
+        
         YouthMembers.Add(member);
-        await SaveToLocalStorage();
+        await SaveDataAsync();
     }
 
     public async Task UpdateMemberAsync(MemberDto updatedMember)
@@ -74,7 +63,7 @@ public class YouthService
             existing.FirstName = updatedMember.FirstName;
             existing.LastName = updatedMember.LastName;
             existing.BirthDateString = updatedMember.BirthDateString;
-            await SaveToLocalStorage();
+            await SaveDataAsync();
         }
     }
 
@@ -85,7 +74,7 @@ public class YouthService
         {
             YouthMembers.Remove(member);
             Presences.RemoveAll(p => p.MemberId == memberId);
-            await SaveToLocalStorage();
+            await SaveDataAsync();
         }
     }
 
@@ -95,7 +84,8 @@ public class YouthService
         var existing = Presences.FirstOrDefault(p => p.MemberId == memberId && p.ParsedDate.Date == date.Date);
         if (existing != null) Presences.Remove(existing);
         else Presences.Add(new PresenceDto { MemberId = memberId, ParsedDate = date });
-        await SaveToLocalStorage();
+        
+        await SaveDataAsync();
     }
 
     public bool IsPresent(int memberId, DateTime date)
@@ -103,21 +93,24 @@ public class YouthService
         return Presences.Any(p => p.MemberId == memberId && p.ParsedDate.Date == date.Date);
     }
 
-    // --- DATA HANDLING ---
-    private async Task SaveToLocalStorage()
+    // --- API HANDLING ---
+    private async Task SaveDataAsync()
     {
-        try 
+        try
         {
-            if (await IsStorageAvailableAsync())
+            var root = new YouthDataRoot { Members = YouthMembers, Presences = Presences };
+            
+            // POST Request an Cloudflare Worker (Speichern)
+            var response = await _http.PostAsJsonAsync("api/youth", root);
+            
+            if (!response.IsSuccessStatusCode)
             {
-                var root = new YouthDataRoot { Members = YouthMembers, Presences = Presences };
-                var json = JsonSerializer.Serialize(root);
-                await _js.InvokeAsync<bool>("storageHelper.setItem", LocalStorageKey, json);
+                Console.WriteLine($"Fehler beim Speichern: {response.StatusCode}");
             }
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Speichern fehlgeschlagen (Ignoriert): {ex.Message}");
+            Console.WriteLine($"API Fehler beim Speichern: {ex.Message}");
         }
         
         NotifyStateChanged();
@@ -125,69 +118,15 @@ public class YouthService
 
     public async Task DownloadDataAsync()
     {
-        try 
-        {
-            var root = new YouthDataRoot { Members = YouthMembers, Presences = Presences };
-            var json = JsonSerializer.Serialize(root, new JsonSerializerOptions { WriteIndented = true });
-            var bytes = System.Text.Encoding.UTF8.GetBytes(json);
-            var base64 = Convert.ToBase64String(bytes);
-            await _js.InvokeVoidAsync("downloadFileFromStream", "youth.json", base64);
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Download fehlgeschlagen: {ex.Message}");
-        }
+        // Funktionalität für manuellen Download, falls gewünscht, sonst leer lassen
+        NotifyStateChanged(); 
     }
 
     public async Task ImportDataAsync(IBrowserFile file)
     {
-        using var stream = file.OpenReadStream(maxAllowedSize: 1024 * 1024 * 10);
-        
-        try
-        {
-            var root = await JsonSerializer.DeserializeAsync<YouthDataRoot>(stream);
-            if (root != null && root.Members != null && root.Members.Count > 0)
-            {
-                YouthMembers = root.Members;
-                Presences = root.Presences ?? new();
-                await SaveToLocalStorage();
-                return;
-            }
-        }
-        catch
-        {
-            try {
-                if(stream.CanSeek) stream.Position = 0;
-            } catch { }
-        }
-        
-        try
-        {
-            var legacy = await JsonSerializer.DeserializeAsync<LegacyDatabase>(stream);
-            if (legacy != null && legacy.Member != null)
-            {
-                YouthMembers = legacy.Member.Where(m => m.YouthStatus == 1).ToList();
-                Presences = legacy.YouthPresence ?? new();
-                await SaveToLocalStorage();
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Import-Fehler: {ex.Message}");
-        }
+        // Import-Logik hier entfernen oder anpassen, falls Upload gewünscht ist
+        await Task.CompletedTask;
     }
 
     private void NotifyStateChanged() => OnChange?.Invoke();
-
-    private async Task<bool> IsStorageAvailableAsync()
-    {
-        try
-        {
-            return await _js.InvokeAsync<bool>("storageHelper.isAvailable");
-        }
-        catch
-        {
-            return false;
-        }
-    }
 }
