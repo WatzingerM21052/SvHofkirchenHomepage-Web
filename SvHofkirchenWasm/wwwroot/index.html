@@ -7,28 +7,51 @@
     <title>SV Hofkirchen - Jugend</title>
     
     <script>
-        // CRITICAL FIX: Prevent storage access errors (localStorage, sessionStorage, caches)
         (function() {
+            // Hilfsfunktion die nichts tut
             const noop = () => {};
+            
+            // Simulierter Speicher
             const storageShim = {
-                getItem: () => null, setItem: noop, removeItem: noop, 
-                clear: noop, key: () => null, length: 0
+                getItem: () => null, 
+                setItem: noop, 
+                removeItem: noop, 
+                clear: noop, 
+                key: () => null, 
+                length: 0
             };
             
             try {
-                // Shim localStorage & sessionStorage
+                // LocalStorage und SessionStorage entschärfen
                 Object.defineProperty(window, 'localStorage', { value: storageShim, writable: false });
                 Object.defineProperty(window, 'sessionStorage', { value: storageShim, writable: false });
-            } catch (e) { console.warn("Storage shim failed", e); }
+            } catch (e) { }
 
-            // Shim Cache API (used by Blazor boot)
+            // WICHTIG: Auch den Cache-Speicher entschärfen (für Blazor Start)
             if (!window.caches) {
-                window.caches = { match: () => Promise.resolve(undefined), open: () => Promise.resolve({ add: noop, put: noop, match: () => Promise.resolve(undefined) }) };
+                window.caches = { 
+                    match: () => Promise.resolve(undefined), 
+                    open: () => Promise.resolve({ 
+                        add: noop, 
+                        put: noop, 
+                        match: () => Promise.resolve(undefined),
+                        delete: () => Promise.resolve(true),
+                        keys: () => Promise.resolve([])
+                    }),
+                    has: () => Promise.resolve(false),
+                    delete: () => Promise.resolve(true),
+                    keys: () => Promise.resolve([])
+                };
             }
         })();
     </script>
     
-    <base href="/" /> 
+    <script>
+        // Auf Localhost ist es "/", auf GitHub Pages "/SvHofkirchenHomepage-Web/"
+        var base = window.location.hostname.includes('localhost') ? '/' : '/SvHofkirchenHomepage-Web/';
+        document.write('<base href="' + base + '" />');
+    </script>
+
     <link rel="stylesheet" href="lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
@@ -42,13 +65,13 @@
     <div id="app">
         <div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #f8f9fa; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9999;">
             <div class="spinner-border" role="status" style="width: 3rem; height: 3rem; color: #052767;"></div>
-            <h4 class="mt-4" style="color: #052767;">Lade Vereinsdaten...</h4>
+            <h4 class="mt-4" style="color: #052767; font-family: sans-serif;">Lade Vereinsdaten...</h4>
         </div>
     </div>
 
     <div id="blazor-error-ui">
-        An unhandled error has occurred.
-        <a href="" class="reload">Reload</a>
+        Ein Fehler ist aufgetreten. Bitte Seite neu laden.
+        <a href="" class="reload">Neu laden</a>
         <a class="dismiss">🗙</a>
     </div>
 
@@ -60,29 +83,36 @@
     <script src="https://npmcdn.com/flatpickr/dist/l10n/de.js"></script>
 
     <script>
-        // Suppress unhandled errors from storage/network to prevent crash UI
-        window.addEventListener('error', (e) => {
-            if (e.message && (e.message.includes('storage') || e.message.includes('503'))) {
+        window.addEventListener('error', function(e) {
+            if (e.message && (
+                e.message.includes('Access to storage') || 
+                e.message.includes('quota') || 
+                e.message.includes('Database')
+            )) {
                 e.stopImmediatePropagation();
                 e.preventDefault();
-                console.warn("Suppressing critical error:", e.message);
+                console.warn("Storage warning suppressed:", e.message);
+                return true;
             }
         });
-        window.addEventListener('unhandledrejection', (e) => {
+        
+        window.addEventListener('unhandledrejection', function(e) {
             const msg = e.reason ? e.reason.toString() : '';
-            if (msg.includes('storage') || msg.includes('503') || msg.includes('Failed to fetch')) {
+            if (msg.includes('storage') || msg.includes('quota') || msg.includes('503')) {
                 e.preventDefault();
             }
         });
+    </script>
 
-        // JS Helpers
+    <script>
         window.setupChart = (id, config) => {
             const ctx = document.getElementById(id)?.getContext('2d');
             if (ctx) {
                 if (window[id + 'Chart']) window[id + 'Chart'].destroy();
                 window[id + 'Chart'] = new Chart(ctx, config);
             }
-        }
+        };
+
         window.downloadFileFromStream = async (fileName, contentBase64) => {
             const link = document.createElement('a');
             link.download = fileName;
@@ -90,7 +120,16 @@
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
-        }
+        };
+
+        window.generatePdf = (title, headers, data) => {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            doc.text(title, 14, 20);
+            doc.autoTable({ startY: 30, head: [headers], body: data });
+            doc.save(title + '.pdf');
+        };
+
         window.initDatePicker = (elementId, initialDate, dotNetHelper) => {
             const el = document.getElementById(elementId);
             if(el) {
@@ -101,7 +140,18 @@
             }
         };
     </script>
-    
-    <script src="_framework/blazor.webassembly.js"></script>
+
+    <script src="_framework/blazor.webassembly.js" autostart="false"></script>
+    <script>
+        // Manueller Start mit Fehlerbehandlung
+        Blazor.start({
+            loadBootResource: function (type, name, defaultUri, integrity) {
+                // Cache-Busting für alle Dateien erzwingen, um 503 Fehler zu minimieren
+                return defaultUri + "?v=" + new Date().getTime();
+            }
+        }).catch(err => {
+            console.warn("Blazor Startfehler (ignoriert):", err);
+        });
+    </script>
 </body>
 </html>
