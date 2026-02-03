@@ -6,33 +6,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>SV Hofkirchen - Jugend</title>
     
-    <!-- Default für GitHub Pages, wird durch obiges Script für localhost überschrieben -->
-    <base href="/SvHofkirchenHomepage-Web/" />
-    
-    <!-- WICHTIG: Dieses Script MUSS NACH der <base> Tag sein! -->
-    <!-- Es wird INLINE ausgeführt, bevor der Browser die relativen Links verarbeitet -->
+    <!-- KRITISCH: Dieses Script MUSS ganz oben sein, um die base href zu setzen BEVOR Links geladen werden! -->
     <script>
-        (function() {
-            const baseElement = document.querySelector('base');
-            if (!baseElement) {
-                console.warn('[AppConfig] Base element not found!');
-                return;
-            }
-            
-            // Detect if running on localhost
-            const isLocalhost = window.location.hostname === 'localhost' || 
-                                window.location.hostname === '127.0.0.1';
-            
-            if (isLocalhost) {
-                // For local development, use root path
-                baseElement.href = '/';
-                console.log('[AppConfig] Dev mode: Base href set to "/"');
-            } else {
-                // For production (GitHub Pages), use subfolder
-                baseElement.href = '/SvHofkirchenHomepage-Web/';
-                console.log('[AppConfig] Production mode: Base href set to "/SvHofkirchenHomepage-Web/"');
-            }
-        })();
+        // Determine correct base href BEFORE any link tags are processed
+        const isLocalhost = window.location.hostname === 'localhost' || 
+                            window.location.hostname === '127.0.0.1';
+        const baseHref = isLocalhost ? '/' : '/SvHofkirchenHomepage-Web/';
+        
+        // Write the base tag DURING HTML parsing (synchronously)
+        document.write('<base href="' + baseHref + '" />');
+        console.log('[AppConfig] Base href set to: ' + baseHref);
     </script>
     
     <link rel="stylesheet" href="lib/bootstrap/dist/css/bootstrap.min.css" />

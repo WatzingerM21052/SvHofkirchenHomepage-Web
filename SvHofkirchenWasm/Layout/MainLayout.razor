@@ -1,7 +1,6 @@
 ﻿@inherits LayoutComponentBase
 @using SvHofkirchenWasm.Services
 @inject AuthService AuthService
-@inject NavigationManager Navigation
 
 <div class="page">
     <div class="sidebar">
@@ -58,7 +57,6 @@
     private async Task HandleLogout()
     {
         await AuthService.LogoutAsync();
-        Navigation.NavigateTo("https://watzingerm21052.github.io/SvHofkirchenHomepage-Web/", forceLoad: true);
     }
 
     protected override async Task OnInitializedAsync()
