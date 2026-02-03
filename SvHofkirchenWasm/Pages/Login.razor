@@ -64,6 +64,11 @@
     private string ErrorMessage = string.Empty;
     private bool IsLoading = false;
 
+    protected override async Task OnInitializedAsync()
+    {
+        await AuthService.InitializeAsync();
+    }
+
     private async Task HandleLogin()
     {
         ErrorMessage = string.Empty;

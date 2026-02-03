@@ -1,5 +1,6 @@
 using System.Text.Json;
 using SvHofkirchenWasm.Models;
+using Microsoft.JSInterop;
 
 namespace SvHofkirchenWasm.Services;
 
@@ -10,12 +11,21 @@ public class AuthService
 
     private User? _currentUser;
     private bool _isAuthenticated = false;
+    private readonly IJSRuntime _jsRuntime;
+    private LocalStorageService _storageService;
 
     public event Action? OnAuthStateChanged;
 
-    public AuthService()
+    public AuthService(IJSRuntime jsRuntime)
     {
-        LoadAuthState();
+        _jsRuntime = jsRuntime;
+        _storageService = new LocalStorageService(_jsRuntime);
+        // LoadAuthState wird nach Komponenten-Init aufgerufen
+    }
+
+    public async Task InitializeAsync()
+    {
+        await LoadAuthStateAsync();
     }
 
     public async Task<AuthResponse> LoginAsync(string userName, string password)
@@ -40,7 +50,7 @@ public class AuthService
                 };
 
                 _isAuthenticated = true;
-                SaveAuthState();
+                await SaveAuthStateAsync();
                 NotifyAuthStateChanged();
 
                 return new AuthResponse
@@ -71,7 +81,7 @@ public class AuthService
     {
         _currentUser = null;
         _isAuthenticated = false;
-        ClearAuthState();
+        await ClearAuthStateAsync();
         NotifyAuthStateChanged();
     }
 
@@ -81,24 +91,31 @@ public class AuthService
 
     public string? CurrentRole => _currentUser?.Role;
 
-    private void SaveAuthState()
+    private async Task SaveAuthStateAsync()
     {
         if (_currentUser != null)
         {
-            var json = JsonSerializer.Serialize(_currentUser);
-            localStorage.SetItem(UserKey, json);
-            localStorage.SetItem(AuthStateKey, "true");
+            try
+            {
+                var json = JsonSerializer.Serialize(_currentUser);
+                await _storageService.SetItemAsync(UserKey, json);
+                await _storageService.SetItemAsync(AuthStateKey, "true");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error saving auth state: {ex.Message}");
+            }
         }
     }
 
-    private void LoadAuthState()
+    private async Task LoadAuthStateAsync()
     {
         try
         {
-            var authState = localStorage.GetItem(AuthStateKey);
+            var authState = await _storageService.GetItemAsync(AuthStateKey);
             if (authState == "true")
             {
-                var userJson = localStorage.GetItem(UserKey);
+                var userJson = await _storageService.GetItemAsync(UserKey);
                 if (!string.IsNullOrEmpty(userJson))
                 {
                     _currentUser = JsonSerializer.Deserialize<User>(userJson);
@@ -106,22 +123,22 @@ public class AuthService
                 }
             }
         }
-        catch
+        catch (Exception ex)
         {
-            // LocalStorage nicht verfügbar oder Fehler
+            Console.WriteLine($"Error loading auth state: {ex.Message}");
         }
     }
 
-    private void ClearAuthState()
+    private async Task ClearAuthStateAsync()
     {
         try
         {
-            localStorage.RemoveItem(AuthStateKey);
-            localStorage.RemoveItem(UserKey);
+            await _storageService.RemoveItemAsync(AuthStateKey);
+            await _storageService.RemoveItemAsync(UserKey);
         }
-        catch
+        catch (Exception ex)
         {
-            // LocalStorage nicht verfügbar
+            Console.WriteLine($"Error clearing auth state: {ex.Message}");
         }
     }
 
@@ -131,24 +148,71 @@ public class AuthService
     }
 }
 
-// Helper für LocalStorage-Zugriff (wird in der Komponente verwendet)
-public static class localStorage
+// LocalStorage Service mit JS Interop
+public class LocalStorageService
 {
-    private static bool _initialized = false;
-    private static Dictionary<string, string> _storage = new();
+    private readonly IJSRuntime _jsRuntime;
+    private bool _storageAvailable = false;
 
-    public static void SetItem(string key, string value)
+    public LocalStorageService(IJSRuntime jsRuntime)
     {
-        _storage[key] = value;
+        _jsRuntime = jsRuntime;
     }
 
-    public static string? GetItem(string key)
+    public async Task SetItemAsync(string key, string value)
     {
-        return _storage.ContainsKey(key) ? _storage[key] : null;
+        try
+        {
+            // Test if storage is available
+            await _jsRuntime.InvokeVoidAsync("eval", "localStorage.setItem('_test', '1'); localStorage.removeItem('_test');");
+            _storageAvailable = true;
+            await _jsRuntime.InvokeVoidAsync("localStorage.setItem", key, value);
+        }
+        catch (Exception ex)
+        {
+            _storageAvailable = false;
+            Console.WriteLine($"LocalStorage SetItem failed: {ex.Message}");
+        }
     }
 
-    public static void RemoveItem(string key)
+    public async Task<string?> GetItemAsync(string key)
     {
-        _storage.Remove(key);
+        try
+        {
+            if (!_storageAvailable)
+            {
+                // Test if storage is available
+                try
+                {
+                    await _jsRuntime.InvokeVoidAsync("eval", "localStorage.setItem('_test', '1'); localStorage.removeItem('_test');");
+                    _storageAvailable = true;
+                }
+                catch
+                {
+                    return null;
+                }
+            }
+            return await _jsRuntime.InvokeAsync<string>("localStorage.getItem", key);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"LocalStorage GetItem failed: {ex.Message}");
+            return null;
+        }
+    }
+
+    public async Task RemoveItemAsync(string key)
+    {
+        try
+        {
+            if (_storageAvailable)
+            {
+                await _jsRuntime.InvokeVoidAsync("localStorage.removeItem", key);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"LocalStorage RemoveItem failed: {ex.Message}");
+        }
     }
 }
