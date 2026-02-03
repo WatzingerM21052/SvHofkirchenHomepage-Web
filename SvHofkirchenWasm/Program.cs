@@ -8,13 +8,18 @@ var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
-// 1. HttpClient auf die Cloudflare API konfigurieren
+// WICHTIG: HttpClient auf die Cloudflare API zeigen lassen
+// Wenn AppConfig.ApiBaseUrl leer ist, nutzen wir die Cloudflare URL direkt
+var apiUrl = !string.IsNullOrEmpty(AppConfig.ApiBaseUrl) 
+             ? AppConfig.ApiBaseUrl 
+             : "https://svhofkirchen-api.svhofkirchen-api.workers.dev";
+
 builder.Services.AddScoped(sp => new HttpClient 
 { 
-    BaseAddress = new Uri(AppConfig.ApiBaseUrl) 
+    BaseAddress = new Uri(apiUrl) 
 });
 
-// 2. Services registrieren
+// Services registrieren
 builder.Services.AddScoped<YouthService>();
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<NavigationService>();
