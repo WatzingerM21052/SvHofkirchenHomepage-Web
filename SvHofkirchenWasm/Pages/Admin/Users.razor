@@ -98,15 +98,15 @@
                     <form>
                         <div class="mb-3">
                             <label for="userName" class="form-label">Benutzername</label>
-                            <input type="text" class="form-control" id="userName" @bind="EditingUser.UserName" />
+                            <input type="text" class="form-control" id="userName" @bind="EditingUser!.UserName" />
                         </div>
                         <div class="mb-3">
                             <label for="email" class="form-label">Email</label>
-                            <input type="email" class="form-control" id="email" @bind="EditingUser.Email" />
+                            <input type="email" class="form-control" id="email" @bind="EditingUser!.Email" />
                         </div>
                         <div class="mb-3">
                             <label for="role" class="form-label">Rolle</label>
-                            <select class="form-select" id="role" @bind="EditingUser.Role">
+                            <select class="form-select" id="role" @bind="EditingUser!.Role">
                                 <option value="Admin">Admin</option>
                                 <option value="Trainer">Trainer</option>
                                 <option value="Mitglied">Mitglied</option>
@@ -114,7 +114,7 @@
                             </select>
                         </div>
                         <div class="mb-3 form-check">
-                            <input type="checkbox" class="form-check-input" id="isActive" @bind="EditingUser.IsActive" />
+                            <input type="checkbox" class="form-check-input" id="isActive" @bind="EditingUser!.IsActive" />
                             <label class="form-check-label" for="isActive">
                                 Aktiv
                             </label>
@@ -229,7 +229,6 @@
     private string? CurrentPassword = null; // Aktuelles Passwort für den bearbeiteten Benutzer
     private string? ManualPassword = null;
     private bool ShowManualPassword = false;
-    private bool IsNewlyCreated = false; // Flag für "gerade erstellt"
 
     protected override void OnInitialized()
     {
@@ -263,7 +262,6 @@ LastLogin = DateTime.Now
         CurrentPassword = null;
         ManualPassword = null;
         ShowManualPassword = false;
-        IsNewlyCreated = false;
         ShowModal = true;
     }
 
@@ -284,7 +282,6 @@ LastLogin = DateTime.Now
         CurrentPassword = UserPasswords.ContainsKey(user.UserId) ? UserPasswords[user.UserId] : null;
         ManualPassword = null;
         ShowManualPassword = false;
-        IsNewlyCreated = false;
         ShowModal = true;
     }
 
@@ -301,7 +298,6 @@ LastLogin = DateTime.Now
             CurrentPassword = newPassword;
             
             UserList.Add(EditingUser);
-            IsNewlyCreated = true;
             // TODO: API-Call zum Speichern mit Passwort
             // Hinweis: In Produktion würde das Passwort gehasht gespeichert
         }
@@ -343,7 +339,6 @@ LastLogin = DateTime.Now
         EditingUser = new();
         ManualPassword = null;
         ShowManualPassword = false;
-        IsNewlyCreated = false;
         // CurrentPassword NICHT zurücksetzen - bleibt für später erhalten
     }
 

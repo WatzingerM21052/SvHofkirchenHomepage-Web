@@ -6,7 +6,41 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>SV Hofkirchen - Jugend</title>
     
-    <!-- KRITISCH: Dieses Script MUSS ganz oben sein, um die base href zu setzen BEVOR Links geladen werden! -->
+    <!-- SUPER-CRITICAL: Replace localStorage FIRST with pure no-op before ANY code tries to access it -->
+    <script>
+        (function() {
+            // Pure no-op storage that never tries to access the real localStorage
+            const safeStorage = {
+                getItem: function(key) { return null; },
+                setItem: function(key, value) { },
+                removeItem: function(key) { },
+                clear: function() { },
+                key: function(index) { return null; },
+                length: 0
+            };
+            
+            // Replace localStorage immediately - don't try to access the real one
+            try {
+                Object.defineProperty(window, 'localStorage', {
+                    value: safeStorage,
+                    writable: false,
+                    configurable: false
+                });
+            } catch (e) {
+                // Silent fail
+            }
+        })();
+
+        // Suppress unhandled rejections related to storage
+        window.addEventListener('unhandledrejection', (event) => {
+            const msg = (event.reason && (event.reason.message || event.reason.toString())) || '';
+            if (msg.includes('storage') || msg.includes('Storage')) {
+                event.preventDefault();
+            }
+        });
+    </script>
+    
+    <!-- Set base href -->
     <script>
         // Determine correct base href BEFORE any link tags are processed
         const isLocalhost = window.location.hostname === 'localhost' || 
@@ -15,9 +49,8 @@
         
         // Write the base tag DURING HTML parsing (synchronously)
         document.write('<base href="' + baseHref + '" />');
-        console.log('[AppConfig] Base href set to: ' + baseHref);
     </script>
-    
+
     <link rel="stylesheet" href="lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
@@ -51,6 +84,25 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://npmcdn.com/flatpickr/dist/l10n/de.js"></script>
+
+    <script>
+        window.addEventListener('unhandledrejection', (event) => {
+            const errorMsg = (event.reason && event.reason.message) || 
+                            (event.reason && event.reason.toString()) || 
+                            event.reason || '';
+            
+            if (errorMsg && errorMsg.toString().includes('Access to storage is not allowed')) {
+                event.preventDefault();
+            }
+        });
+
+        window.addEventListener('error', (event) => {
+            if (event.message && event.message.includes('Access to storage is not allowed')) {
+                event.preventDefault();
+                return true;
+            }
+        });
+    </script>
 
     <script>
         window.setupChart = (id, config) => {
@@ -114,6 +166,7 @@
         };
     </script>
 
+    <script src="js/storage-helper.js"></script>
     <script src="_framework/blazor.webassembly.js"></script>
 </body>
 

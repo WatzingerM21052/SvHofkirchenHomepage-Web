@@ -32,10 +32,12 @@ public class YouthService
 
         try
         {
-            bool dataLoaded = false;
-
-            // 1. VERSUCH: Browser LocalStorage (falls du schon was gespeichert hast)
-            var localData = await _js.InvokeAsync<string>("localStorage.getItem", LocalStorageKey);
+            // Versuche Daten aus LocalStorage zu laden (falls vorhanden)
+            string? localData = null;
+            if (await IsStorageAvailableAsync())
+            {
+                localData = await _js.InvokeAsync<string?>("storageHelper.getItem", LocalStorageKey);
+            }
             if (!string.IsNullOrEmpty(localData))
             {
                 var root = JsonSerializer.Deserialize<YouthDataRoot>(localData);
@@ -43,59 +45,12 @@ public class YouthService
                 {
                     YouthMembers = root.Members;
                     Presences = root.Presences ?? new();
-                    dataLoaded = true;
-                }
-            }
-
-            // 2. VERSUCH: youth.json vom Server
-            if (!dataLoaded)
-            {
-                try 
-                {
-                    var request = new HttpRequestMessage(HttpMethod.Get, "youth.json");
-                    var response = await _http.SendAsync(request);
-
-                    if (response.IsSuccessStatusCode)
-                    {
-                        var cleanData = await response.Content.ReadFromJsonAsync<YouthDataRoot>();
-                        // Nur nutzen, wenn auch wirklich Spieler drin sind!
-                        if (cleanData != null && cleanData.Members != null && cleanData.Members.Count > 0)
-                        {
-                            YouthMembers = cleanData.Members;
-                            Presences = cleanData.Presences ?? new();
-                            dataLoaded = true;
-                        }
-                    }
-                }
-                catch { /* Ignorieren */ }
-            }
-
-            // 3. FALLBACK: database.json (Der wichtige Teil für den Start!)
-            if (!dataLoaded)
-            {
-                try 
-                {
-                    var legacy = await _http.GetFromJsonAsync<LegacyDatabase>("database.json");
-                    if (legacy != null && legacy.Member != null)
-                    {
-                        // Nur Jugendliche filtern + alte Anwesenheiten
-                        YouthMembers = legacy.Member.Where(m => m.YouthStatus == 1).OrderBy(m => m.LastName).ToList();
-                        Presences = legacy.YouthPresence ?? new();
-                        
-                        // Sofort cachen
-                        await SaveToLocalStorage();
-                        dataLoaded = true;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Init Fehler (Fallback): {ex.Message}");
                 }
             }
         }
-        catch (Exception ex)
+        catch
         {
-            Console.WriteLine($"Init Fehler (Global): {ex.Message}");
+            // Ignorieren
         }
 
         IsInitialized = true;
@@ -152,9 +107,14 @@ public class YouthService
     // --- DATA HANDLING ---
     private async Task SaveToLocalStorage()
     {
+        if (!await IsStorageAvailableAsync())
+        {
+            return;
+        }
+
         var root = new YouthDataRoot { Members = YouthMembers, Presences = Presences };
         var json = JsonSerializer.Serialize(root);
-        await _js.InvokeVoidAsync("localStorage.setItem", LocalStorageKey, json);
+        await _js.InvokeAsync<bool>("storageHelper.setItem", LocalStorageKey, json);
         NotifyStateChanged();
     }
 
@@ -210,4 +170,16 @@ public class YouthService
     }
 
     private void NotifyStateChanged() => OnChange?.Invoke();
+
+    private async Task<bool> IsStorageAvailableAsync()
+    {
+        try
+        {
+            return await _js.InvokeAsync<bool>("storageHelper.isAvailable");
+        }
+        catch
+        {
+            return false;
+        }
+    }
 }

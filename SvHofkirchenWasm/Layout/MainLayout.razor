@@ -1,6 +1,7 @@
 ﻿@inherits LayoutComponentBase
 @using SvHofkirchenWasm.Services
 @inject AuthService AuthService
+@inject NavigationService NavService
 
 <div class="page">
     <div class="sidebar">
@@ -57,6 +58,7 @@
     private async Task HandleLogout()
     {
         await AuthService.LogoutAsync();
+        NavService.NavigateToHome(forceLoad: true);
     }
 
     protected override async Task OnInitializedAsync()

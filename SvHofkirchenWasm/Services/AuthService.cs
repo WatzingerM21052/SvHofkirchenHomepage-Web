@@ -163,10 +163,10 @@ public class LocalStorageService
     {
         try
         {
-            // Test if storage is available
-            await _jsRuntime.InvokeVoidAsync("eval", "localStorage.setItem('_test', '1'); localStorage.removeItem('_test');");
-            _storageAvailable = true;
-            await _jsRuntime.InvokeVoidAsync("localStorage.setItem", key, value);
+            _storageAvailable = await IsAvailableAsync();
+            if (!_storageAvailable) return;
+
+            await _jsRuntime.InvokeAsync<bool>("storageHelper.setItem", key, value);
         }
         catch (Exception ex)
         {
@@ -179,20 +179,10 @@ public class LocalStorageService
     {
         try
         {
-            if (!_storageAvailable)
-            {
-                // Test if storage is available
-                try
-                {
-                    await _jsRuntime.InvokeVoidAsync("eval", "localStorage.setItem('_test', '1'); localStorage.removeItem('_test');");
-                    _storageAvailable = true;
-                }
-                catch
-                {
-                    return null;
-                }
-            }
-            return await _jsRuntime.InvokeAsync<string>("localStorage.getItem", key);
+            _storageAvailable = await IsAvailableAsync();
+            if (!_storageAvailable) return null;
+
+            return await _jsRuntime.InvokeAsync<string?>("storageHelper.getItem", key);
         }
         catch (Exception ex)
         {
@@ -205,14 +195,26 @@ public class LocalStorageService
     {
         try
         {
-            if (_storageAvailable)
-            {
-                await _jsRuntime.InvokeVoidAsync("localStorage.removeItem", key);
-            }
+            _storageAvailable = await IsAvailableAsync();
+            if (!_storageAvailable) return;
+
+            await _jsRuntime.InvokeAsync<bool>("storageHelper.removeItem", key);
         }
         catch (Exception ex)
         {
             Console.WriteLine($"LocalStorage RemoveItem failed: {ex.Message}");
+        }
+    }
+
+    private async Task<bool> IsAvailableAsync()
+    {
+        try
+        {
+            return await _jsRuntime.InvokeAsync<bool>("storageHelper.isAvailable");
+        }
+        catch
+        {
+            return false;
         }
     }
 }

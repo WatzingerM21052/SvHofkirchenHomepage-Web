@@ -1,11 +1,25 @@
 ﻿<div class="d-flex flex-column h-100">
     <div class="p-4 text-center border-bottom border-secondary">
-        <a href="" class="d-block text-decoration-none">
+        <a href="" class="d-block text-decoration-none nav-logo">
             <img src="Pictures/SVHofkirchenLogoWhite.svg" alt="SV Hofkirchen" class="img-fluid mb-2"
                 style="max-height: 80px;" />
             <h6 class="text-white mb-0 fw-bold text-uppercase letter-spacing-1">Sektion Schach</h6>
             <small class="text-white-50">Jugend Portal</small>
         </a>
+
+    <style>
+        /* Entfernt den Standard-Focus-Ring vom Logo-Link */
+        .nav-logo:focus {
+            outline: none;
+        }
+    
+        /* Optional: Besserer Focus-Style für Keyboard-Navigation (Accessibility) */
+        .nav-logo:focus-visible {
+            outline: 2px solid rgba(255, 255, 255, 0.5);
+            outline-offset: 2px;
+            border-radius: 4px;
+        }
+    </style>
     </div>
 
     <nav class="flex-grow-1 p-3">

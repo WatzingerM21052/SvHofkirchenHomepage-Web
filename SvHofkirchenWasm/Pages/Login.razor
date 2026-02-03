@@ -23,13 +23,13 @@
                         <div class="mb-3">
                             <label for="userName" class="form-label">Benutzername</label>
                             <input type="text" class="form-control" id="userName" placeholder="Benutzername eingeben"
-                                @bind="UserName" disabled="@IsLoading" />
+                                @bind="UserName" disabled="@IsLoading" autocomplete="username" />
                         </div>
 
                         <div class="mb-3">
                             <label for="password" class="form-label">Passwort</label>
                             <input type="password" class="form-control" id="password" placeholder="Passwort eingeben"
-                                @bind="Password" disabled="@IsLoading" />
+                                @bind="Password" disabled="@IsLoading" autocomplete="current-password" />
                         </div>
 
                         <button type="submit" class="btn btn-primary w-100" disabled="@IsLoading">
