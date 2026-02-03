@@ -32,7 +32,6 @@ public class YouthService
 
         try
         {
-            // Versuche Daten aus LocalStorage zu laden (falls vorhanden)
             string? localData = null;
             if (await IsStorageAvailableAsync())
             {
@@ -48,9 +47,9 @@ public class YouthService
                 }
             }
         }
-        catch
+        catch (Exception ex)
         {
-            // Ignorieren
+            Console.WriteLine($"Fehler beim Laden der Jugenddaten: {ex.Message}");
         }
 
         IsInitialized = true;
@@ -107,31 +106,43 @@ public class YouthService
     // --- DATA HANDLING ---
     private async Task SaveToLocalStorage()
     {
-        if (!await IsStorageAvailableAsync())
+        try 
         {
-            return;
+            if (await IsStorageAvailableAsync())
+            {
+                var root = new YouthDataRoot { Members = YouthMembers, Presences = Presences };
+                var json = JsonSerializer.Serialize(root);
+                await _js.InvokeAsync<bool>("storageHelper.setItem", LocalStorageKey, json);
+            }
         }
-
-        var root = new YouthDataRoot { Members = YouthMembers, Presences = Presences };
-        var json = JsonSerializer.Serialize(root);
-        await _js.InvokeAsync<bool>("storageHelper.setItem", LocalStorageKey, json);
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Speichern fehlgeschlagen (Ignoriert): {ex.Message}");
+        }
+        
         NotifyStateChanged();
     }
 
     public async Task DownloadDataAsync()
     {
-        var root = new YouthDataRoot { Members = YouthMembers, Presences = Presences };
-        var json = JsonSerializer.Serialize(root, new JsonSerializerOptions { WriteIndented = true });
-        var bytes = System.Text.Encoding.UTF8.GetBytes(json);
-        var base64 = Convert.ToBase64String(bytes);
-        await _js.InvokeVoidAsync("downloadFileFromStream", "youth.json", base64);
+        try 
+        {
+            var root = new YouthDataRoot { Members = YouthMembers, Presences = Presences };
+            var json = JsonSerializer.Serialize(root, new JsonSerializerOptions { WriteIndented = true });
+            var bytes = System.Text.Encoding.UTF8.GetBytes(json);
+            var base64 = Convert.ToBase64String(bytes);
+            await _js.InvokeVoidAsync("downloadFileFromStream", "youth.json", base64);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Download fehlgeschlagen: {ex.Message}");
+        }
     }
 
     public async Task ImportDataAsync(IBrowserFile file)
     {
         using var stream = file.OpenReadStream(maxAllowedSize: 1024 * 1024 * 10);
         
-        // Versuche erst das neue Format (Members/Presences)
         try
         {
             var root = await JsonSerializer.DeserializeAsync<YouthDataRoot>(stream);
@@ -140,17 +151,16 @@ public class YouthService
                 YouthMembers = root.Members;
                 Presences = root.Presences ?? new();
                 await SaveToLocalStorage();
-                NotifyStateChanged();
                 return;
             }
         }
         catch
         {
-            // Wenn das fehlschlägt, versuche altes Format
-            stream.Position = 0;
+            try {
+                if(stream.CanSeek) stream.Position = 0;
+            } catch { }
         }
         
-        // Fallback: Altes Format (Member/YouthPresence)
         try
         {
             var legacy = await JsonSerializer.DeserializeAsync<LegacyDatabase>(stream);
@@ -159,13 +169,11 @@ public class YouthService
                 YouthMembers = legacy.Member.Where(m => m.YouthStatus == 1).ToList();
                 Presences = legacy.YouthPresence ?? new();
                 await SaveToLocalStorage();
-                NotifyStateChanged();
             }
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Import-Fehler: {ex.Message}");
-            throw;
         }
     }
 

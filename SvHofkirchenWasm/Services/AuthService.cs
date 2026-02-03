@@ -20,7 +20,6 @@ public class AuthService
     {
         _jsRuntime = jsRuntime;
         _storageService = new LocalStorageService(_jsRuntime);
-        // LoadAuthState wird nach Komponenten-Init aufgerufen
     }
 
     public async Task InitializeAsync()
@@ -32,10 +31,6 @@ public class AuthService
     {
         try
         {
-            // TODO: API-Call zur Cloudflare Worker durchführen
-            // Für jetzt: Lokale Demo-Authentifizierung
-
-            // Demo: Nur "admin" / "admin" funktioniert
             if (userName == "admin" && password == "admin")
             {
                 _currentUser = new User
@@ -148,11 +143,14 @@ public class AuthService
     }
 }
 
-// LocalStorage Service mit JS Interop
+// LocalStorage Service mit JS Interop und robustem Fallback
 public class LocalStorageService
 {
     private readonly IJSRuntime _jsRuntime;
-    private bool _storageAvailable = false;
+    
+    // In-Memory Fallback Speicher, falls LocalStorage blockiert ist
+    private readonly Dictionary<string, string> _memoryStore = new Dictionary<string, string>();
+    private bool _useMemoryFallback = false;
 
     public LocalStorageService(IJSRuntime jsRuntime)
     {
@@ -161,60 +159,60 @@ public class LocalStorageService
 
     public async Task SetItemAsync(string key, string value)
     {
+        if (_useMemoryFallback)
+        {
+            _memoryStore[key] = value;
+            return;
+        }
+
         try
         {
-            _storageAvailable = await IsAvailableAsync();
-            if (!_storageAvailable) return;
-
-            await _jsRuntime.InvokeAsync<bool>("storageHelper.setItem", key, value);
+            await _jsRuntime.InvokeVoidAsync("localStorage.setItem", key, value);
         }
         catch (Exception ex)
         {
-            _storageAvailable = false;
-            Console.WriteLine($"LocalStorage SetItem failed: {ex.Message}");
+            Console.WriteLine($"LocalStorage Zugriff verweigert ({ex.Message}). Nutze nun In-Memory-Speicher.");
+            _useMemoryFallback = true;
+            _memoryStore[key] = value;
         }
     }
 
     public async Task<string?> GetItemAsync(string key)
     {
+        if (_useMemoryFallback)
+        {
+            return _memoryStore.TryGetValue(key, out var val) ? val : null;
+        }
+
         try
         {
-            _storageAvailable = await IsAvailableAsync();
-            if (!_storageAvailable) return null;
-
-            return await _jsRuntime.InvokeAsync<string?>("storageHelper.getItem", key);
+            return await _jsRuntime.InvokeAsync<string?>("localStorage.getItem", key);
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"LocalStorage GetItem failed: {ex.Message}");
-            return null;
+            Console.WriteLine($"LocalStorage Zugriff verweigert ({ex.Message}). Nutze nun In-Memory-Speicher.");
+            _useMemoryFallback = true;
+            return _memoryStore.TryGetValue(key, out var val) ? val : null;
         }
     }
 
     public async Task RemoveItemAsync(string key)
     {
+        if (_useMemoryFallback)
+        {
+            _memoryStore.Remove(key);
+            return;
+        }
+
         try
         {
-            _storageAvailable = await IsAvailableAsync();
-            if (!_storageAvailable) return;
-
-            await _jsRuntime.InvokeAsync<bool>("storageHelper.removeItem", key);
+            await _jsRuntime.InvokeVoidAsync("localStorage.removeItem", key);
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"LocalStorage RemoveItem failed: {ex.Message}");
-        }
-    }
-
-    private async Task<bool> IsAvailableAsync()
-    {
-        try
-        {
-            return await _jsRuntime.InvokeAsync<bool>("storageHelper.isAvailable");
-        }
-        catch
-        {
-            return false;
+            Console.WriteLine($"LocalStorage Remove fehlgeschlagen: {ex.Message}");
+            _useMemoryFallback = true;
+            _memoryStore.Remove(key);
         }
     }
 }

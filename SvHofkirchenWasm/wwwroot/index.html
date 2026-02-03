@@ -6,10 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>SV Hofkirchen - Jugend</title>
     
-    <!-- SUPER-CRITICAL: Replace localStorage FIRST with pure no-op before ANY code tries to access it -->
     <script>
         (function() {
-            // Pure no-op storage that never tries to access the real localStorage
+            // Pure no-op storage replacement
             const safeStorage = {
                 getItem: function(key) { return null; },
                 setItem: function(key, value) { },
@@ -19,16 +18,19 @@
                 length: 0
             };
             
-            // Replace localStorage immediately - don't try to access the real one
-            try {
-                Object.defineProperty(window, 'localStorage', {
-                    value: safeStorage,
-                    writable: false,
-                    configurable: false
-                });
-            } catch (e) {
-                // Silent fail
+            function shim(type) {
+                try {
+                    Object.defineProperty(window, type, {
+                        value: safeStorage,
+                        writable: false,
+                        configurable: false
+                    });
+                } catch (e) { /* Silent fail */ }
             }
+
+            // Shim BOTH storage types immediately to prevent browser errors
+            shim('localStorage');
+            shim('sessionStorage');
         })();
 
         // Suppress unhandled rejections related to storage
@@ -40,7 +42,6 @@
         });
     </script>
     
-    <!-- Set base href -->
     <script>
         // Determine correct base href BEFORE any link tags are processed
         const isLocalhost = window.location.hostname === 'localhost' || 
