@@ -1,6 +1,6 @@
 ﻿@using SvHofkirchenWasm.Services
 @inject AuthService AuthService
-@inject NavigationManager Navigation
+@inject NavigationService NavigationService
 
 <div class="d-flex flex-column h-100">
     <div class="p-4 text-center border-bottom border-secondary">
@@ -131,6 +131,6 @@
     {
         await AuthService.LogoutAsync();
         // Erzwingt einen kompletten Reload der Seite -> Daten werden aus dem Speicher gelöscht
-        Navigation.NavigateTo("/", forceLoad: true);
+        NavigationService.NavigateToHome(forceLoad: true);
     }
 }
