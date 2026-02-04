@@ -7,12 +7,12 @@ namespace SvHofkirchenWasm.Services;
 public class AuthService
 {
     private readonly HttpClient _http;
+    
     private User? _currentUser;
     private bool _isAuthenticated = false;
     private List<User> _users = new();
     private bool _usersLoaded = false;
 
-    // Optionen für Case-Insensitive JSON (wichtig für die Kommunikation mit Worker)
     private readonly JsonSerializerOptions _options = new() { PropertyNameCaseInsensitive = true };
 
     public event Action? OnAuthStateChanged;
@@ -28,6 +28,7 @@ public class AuthService
     {
         try
         {
+            // Login Daten werden per HTTPS verschlüsselt gesendet
             var response = await _http.PostAsJsonAsync("api/auth/login", new { Username = userName, Password = password });
             if (response.IsSuccessStatusCode)
             {
@@ -72,7 +73,6 @@ public class AuthService
 
     public async Task AddUserAsync(User user)
     {
-        // Erst laden, falls noch nicht geschehen
         if (!_usersLoaded) await GetUsersAsync();
 
         if (_users.Any(u => u.UserName.Equals(user.UserName, StringComparison.OrdinalIgnoreCase))) return;
@@ -89,13 +89,10 @@ public class AuthService
         var index = _users.FindIndex(u => u.UserId == updatedUser.UserId);
         if (index != -1)
         {
-            // SICHERHEIT: Wenn im UI das Passwortfeld leer war, behalten wir das alte Passwort!
             if (string.IsNullOrEmpty(updatedUser.Password))
             {
                 updatedUser.Password = _users[index].Password;
             }
-            // Andernfalls wird das neue Passwort übernommen
-
             _users[index] = updatedUser;
             await SaveUsersToApiAsync();
         }
@@ -114,6 +111,8 @@ public class AuthService
 
     private async Task SaveUsersToApiAsync()
     {
+        // Users werden im Klartext (JSON) an den Server gesendet, aber durch HTTPS Tunnel geschützt.
+        // Der Server speichert sie lesbar, damit Admin sie bearbeiten kann.
         try { await _http.PostAsJsonAsync("api/users", _users); }
         catch (Exception ex) { Console.WriteLine("Speicherfehler: " + ex.Message); }
     }

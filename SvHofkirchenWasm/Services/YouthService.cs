@@ -10,15 +10,14 @@ namespace SvHofkirchenWasm.Services;
 public class YouthService
 {
     private readonly HttpClient _http;
-    private readonly IJSRuntime _js; // Neu: Für den Datei-Download (JS Interop)
-    
+    private readonly IJSRuntime _js;
+
     public List<MemberDto> YouthMembers { get; private set; } = new();
     public List<PresenceDto> Presences { get; private set; } = new();
     public bool IsInitialized { get; private set; }
 
     public event Action? OnChange;
 
-    // Wir injizieren jetzt auch die JSRuntime für den Download
     public YouthService(HttpClient http, IJSRuntime js)
     {
         _http = http;
@@ -31,8 +30,10 @@ public class YouthService
 
         try
         {
-            // GET Request an Cloudflare Worker
-            var root = await _http.GetFromJsonAsync<YouthDataRoot>("api/youth");
+            // Lädt die Daten ganz normal über HTTPS (sicherer Kanal)
+            // Der Server entscheidet, wer was sehen darf
+            var root = await _http.GetFromJsonAsync<YouthDataRoot>("api/youth", 
+                new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
             
             if (root != null)
             {
@@ -42,7 +43,7 @@ public class YouthService
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Fehler beim Laden der API-Daten: {ex.Message}");
+            Console.WriteLine($"Fehler beim Laden der Vereinsdaten: {ex.Message}");
         }
 
         IsInitialized = true;
@@ -98,16 +99,15 @@ public class YouthService
         return Presences.Any(p => p.MemberId == memberId && p.ParsedDate.Date == date.Date);
     }
 
-    // --- API & DATEI HANDLING ---
+    // --- API & BACKUP ---
 
-    // Speichert den aktuellen Stand in der Cloud
     private async Task SaveDataAsync()
     {
         try
         {
+            // Senden der Daten an den Server (HTTPS verschlüsselt den Transport automatisch)
+            // Der Server speichert es im Klartext für Backups & Admin-Einsicht
             var root = new YouthDataRoot { Members = YouthMembers, Presences = Presences };
-            
-            // POST Request an Cloudflare Worker
             var response = await _http.PostAsJsonAsync("api/youth", root);
             
             if (!response.IsSuccessStatusCode)
@@ -123,22 +123,15 @@ public class YouthService
         NotifyStateChanged();
     }
 
-    // Exportiert die aktuellen API-Daten als JSON-Datei (Download im Browser)
     public async Task DownloadDataAsync()
     {
         try 
         {
             var root = new YouthDataRoot { Members = YouthMembers, Presences = Presences };
-            
-            // JSON erzeugen
-            var jsonOptions = new JsonSerializerOptions { WriteIndented = true };
-            string json = JsonSerializer.Serialize(root, jsonOptions);
-            
-            // In Base64 umwandeln für den JS-Download
+            string json = JsonSerializer.Serialize(root, new JsonSerializerOptions { WriteIndented = true });
             var bytes = Encoding.UTF8.GetBytes(json);
             var base64 = Convert.ToBase64String(bytes);
             
-            // JS-Funktion in index.html aufrufen
             await _js.InvokeVoidAsync("downloadFileFromStream", "vereinsdaten_backup.json", base64);
         }
         catch (Exception ex)
@@ -147,12 +140,10 @@ public class YouthService
         }
     }
 
-    // Importiert eine JSON-Datei, überschreibt lokal UND lädt in die Cloud hoch
     public async Task ImportDataAsync(IBrowserFile file)
     {
         try
         {
-            // Datei lesen (Limit auf 5MB erhöht)
             using var stream = file.OpenReadStream(maxAllowedSize: 1024 * 1024 * 5); 
             using var reader = new StreamReader(stream);
             var json = await reader.ReadToEndAsync();
@@ -161,11 +152,8 @@ public class YouthService
             
             if (root != null)
             {
-                // Lokale Daten aktualisieren
                 YouthMembers = root.Members ?? new();
                 Presences = root.Presences ?? new();
-                
-                // SOFORT in die Cloud speichern
                 await SaveDataAsync();
             }
         }
@@ -178,4 +166,28 @@ public class YouthService
     }
 
     private void NotifyStateChanged() => OnChange?.Invoke();
+
+    // --- GOOGLE DRIVE BACKUP ---
+    public async Task<string> TriggerGoogleDriveBackupAsync()
+    {
+        try
+        {
+            // Sendet den Befehl an den Worker (POST /api/backup/drive)
+            var response = await _http.PostAsync("api/backup/drive", null);
+            
+            if (response.IsSuccessStatusCode)
+            {
+                return "Backup erfolgreich auf Google Drive erstellt!";
+            }
+            else
+            {
+                var errorMsg = await response.Content.ReadAsStringAsync();
+                return $"Fehler beim Backup: {errorMsg}";
+            }
+        }
+        catch (Exception ex)
+        {
+            return $"Verbindungsfehler: {ex.Message}";
+        }
+    }
 }

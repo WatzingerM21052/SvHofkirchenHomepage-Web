@@ -21,3 +21,9 @@ public class AuthResponse
     public User? User { get; set; }
     public string? Token { get; set; }
 }
+
+public class LoginModel
+{
+    public string UserName { get; set; } = string.Empty;
+    public string Password { get; set; } = string.Empty;
+}
