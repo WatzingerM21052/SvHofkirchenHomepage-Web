@@ -10,7 +10,7 @@
     return;
 }
 
-@if (AuthService.CurrentRole == "Besucher")
+@if (AuthService.CurrentRole == "Besucher" || AuthService.CurrentRole == "Trainer")
 {
     <div class="alert alert-danger" role="alert">
         <strong>Zugriff verweigert!</strong> Diese Seite ist nicht für Besucher zugänglich.

@@ -5,7 +5,7 @@ var e=!1;const t=async()=>WebAssembly.validate(new Uint8Array([0,97,115,109,1,0,
   "mainAssemblyName": "SvHofkirchenWasm",
   "applicationEnvironment": "Development",
   "resources": {
-    "hash": "sha256-Dw8uYedweTmGU4A99KbDlqad6Uyn5HN1wbrgrK0HcrI=",
+    "hash": "sha256-rX4M5UXECh9zclO3wPFW8ZedRsGRbT/sqAwlBtX0+iw=",
     "jsModuleNative": [
       {
         "name": "dotnet.native.87vtjjdetb.js"
@@ -1242,16 +1242,16 @@ var e=!1;const t=async()=>WebAssembly.validate(new Uint8Array([0,97,115,109,1,0,
       },
       {
         "virtualPath": "SvHofkirchenWasm.wasm",
-        "name": "SvHofkirchenWasm.z6p38o89sc.wasm",
-        "integrity": "sha256-tTWcIkYGP4uVvQs/xXqBkJMzwDhhSlrS6SPxpwiTgus=",
+        "name": "SvHofkirchenWasm.7fo0e4k05p.wasm",
+        "integrity": "sha256-XeY3tJohNTCf/Z/U2QpTm3mUcRf3h92ykNrjsltXl/w=",
         "cache": "force-cache"
       }
     ],
     "pdb": [
       {
         "virtualPath": "SvHofkirchenWasm.pdb",
-        "name": "SvHofkirchenWasm.k2rg0mioi6.pdb",
-        "integrity": "sha256-9NpKGS+ILEeXRo03oUj3G0IVWeRAVeGd34JnejKSJGc=",
+        "name": "SvHofkirchenWasm.m2dx3dtfu4.pdb",
+        "integrity": "sha256-knj4zqUwKxfV6J5xz/sGxiz6pCGg6ogGKMR7nKMdye8=",
         "cache": "force-cache"
       }
     ],

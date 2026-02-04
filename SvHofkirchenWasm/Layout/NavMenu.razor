@@ -77,7 +77,7 @@
 
     <div class="p-3 border-top border-secondary mt-auto">
         <div class="nav flex-column">
-            @if (AuthService.IsAuthenticated && AuthService.CurrentRole != "Besucher")
+            @if (AuthService.IsAuthenticated && AuthService.CurrentRole == "Admin")
             {
                 <div class="nav-item">
                     <NavLink class="nav-link" href="settings">
@@ -98,7 +98,7 @@
             <div class="nav-item mt-2">
                  @if (AuthService.IsAuthenticated)
                  {
-                     <NavLink class="nav-link text-warning" href="">
+                     <NavLink class="nav-link text-warning" href="" @onclick="Logout">
                         <i class="bi bi-box-arrow-right me-2"></i> Abmelden
                      </NavLink>
                  }
