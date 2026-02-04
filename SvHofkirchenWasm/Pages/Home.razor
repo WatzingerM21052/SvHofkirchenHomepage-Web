@@ -171,15 +171,15 @@ else
                         </div>
                         <div class="list-group list-group-flush">
 
-                            <a href="profile"
-                                class="list-group-item list-group-item-action p-3 border-bottom-0 d-flex align-items-center">
+                            <button type="button" @onclick="OpenProfilePopup"
+                                class="list-group-item list-group-item-action p-3 border-bottom-0 d-flex align-items-center border-0">
                                 <i class="bi bi-person-circle fs-4 me-3 text-primary"></i>
                                 <div>
                                     <div class="fw-bold">Mein Profil</div>
-                                    <small class="text-muted">Mein Profil ansehen @(AuthService.CurrentRole == "Admin" ? "& bearbeiten" : "")</small>
+                                    <small class="text-muted">Mein Profil ansehen</small>
                                 </div>
                                 <i class="bi bi-chevron-right ms-auto text-muted"></i>
-                            </a>
+                            </button>
 
                             <a href="youth-list"
                                 class="list-group-item list-group-item-action p-3 border-bottom-0 d-flex align-items-center">
@@ -213,21 +213,75 @@ else
                     <div class="glass-card p-4 h-100">
                         <h6 class="text-uppercase text-muted fw-bold small mb-3">Schnelleinstiege</h6>
                         <div class="d-flex flex-column gap-2">
-                            <a href="profile"
-                                class="list-group-item list-group-item-action p-3 border-bottom-0 d-flex align-items-center">
+                            <button type="button" @onclick="OpenProfilePopup"
+                                class="list-group-item list-group-item-action p-3 border-bottom-0 d-flex align-items-center border-0">
                                 <i class="bi bi-person-circle fs-4 me-3 text-primary"></i>
                                 <div>
                                     <div class="fw-bold">Mein Profil</div>
-                                    <small class="text-muted">Mein Profil ansehen @(AuthService.CurrentRole == "Admin" ? "& bearbeiten" : "")</small>
+                                    <small class="text-muted">Mein Profil ansehen</small>
                                 </div>
                                 <i class="bi bi-chevron-right ms-auto text-muted"></i>
-                            </a>
+                            </button>
                         </div>
                     </div>
                 </div>
             }
         </div>
     </div>
+
+    @* Profile Popup Modal *@
+    @if (showProfilePopup)
+    {
+        <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);" @onclick="CloseProfilePopup">
+            <div class="modal-dialog modal-dialog-centered" @onclick:stopPropagation>
+                <div class="modal-content shadow-lg border-0">
+                    <div class="modal-header bg-primary text-white border-0">
+                        <h5 class="modal-title">
+                            <i class="bi bi-person-circle me-2"></i>Mein Profil
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" @onclick="CloseProfilePopup"></button>
+                    </div>
+                    <div class="modal-body p-4">
+                        @if (AuthService.CurrentUser != null)
+                        {
+                            <div class="text-center mb-4">
+                                <div class="bg-primary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center" 
+                                     style="width: 80px; height: 80px;">
+                                    <i class="bi bi-person-fill text-primary" style="font-size: 2.5rem;"></i>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label text-muted small text-uppercase fw-bold">Benutzername</label>
+                                <div class="p-3 bg-light rounded border">
+                                    <i class="bi bi-person me-2 text-primary"></i>
+                                    <strong>@AuthService.CurrentUser.UserName</strong>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label text-muted small text-uppercase fw-bold">E-Mail</label>
+                                <div class="p-3 bg-light rounded border">
+                                    <i class="bi bi-envelope me-2 text-primary"></i>
+                                    <strong>@AuthService.CurrentUser.Email</strong>
+                                </div>
+                            </div>
+                            <div class="mb-0">
+                                <label class="form-label text-muted small text-uppercase fw-bold">Rolle</label>
+                                <div class="p-3 bg-light rounded border">
+                                    <i class="bi bi-shield-check me-2 text-primary"></i>
+                                    <span class="badge bg-primary">@AuthService.CurrentUser.Role</span>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                    <div class="modal-footer border-0 bg-light">
+                        <button type="button" class="btn btn-secondary" @onclick="CloseProfilePopup">
+                            <i class="bi bi-x-circle me-1"></i>Schließen
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
 }
 
 <style>
@@ -256,9 +310,42 @@ else
     .backdrop-blur:hover {
         background: rgba(255, 255, 255, 0.2);
     }
+
+    /* Button als Link-Stil */
+    button.list-group-item {
+        text-align: left;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    button.list-group-item:hover {
+        background-color: rgba(0, 0, 0, 0.03);
+    }
+
+    /* Modal Animation */
+    .modal.show {
+        animation: fadeIn 0.15s ease-in;
+    }
+
+    @@keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
 </style>
 
 @code {
+    private bool showProfilePopup = false;
+
+    private void OpenProfilePopup()
+    {
+        showProfilePopup = true;
+    }
+
+    private void CloseProfilePopup()
+    {
+        showProfilePopup = false;
+    }
+
     protected override async Task OnInitializedAsync()
     {
         Service.OnChange += StateHasChanged;
