@@ -1,40 +1,56 @@
 # ⚽ SV Hofkirchen Vereinsverwaltung
 
-Eine moderne, serverlose Web-Anwendung zur Verwaltung von Vereinsmitgliedern, Anwesenheiten und Benutzerrechten. Entwickelt mit **Blazor WebAssembly** und **Cloudflare Workers**.
+Ein Cloud-natives Web-Portal zur Digitalisierung der Vereinsorganisation. Entwickelt als **Progressive Web App (PWA)**, spezialisiert auf die Verwaltung von Jugendsportgruppen, Anwesenheitserfassung und Datensicherheit.
 
-![Status](https://img.shields.io/badge/Status-Production-success) ![Tech](https://img.shields.io/badge/Tech-Blazor%20WASM-purple) ![Backend](https://img.shields.io/badge/Backend-Cloudflare%20Workers-orange)
+![Status](https://img.shields.io/badge/Production-Stable-success) ![Platform](https://img.shields.io/badge/Platform-WebAssembly-blueviolet) ![Architecture](https://img.shields.io/badge/Architecture-Serverless-orange)
 
-## ✨ Features
+## 🎯 Projektziel
+Ablösung dezentraler Listen durch eine zentrale, mobil verfügbare Single-Page-Application (SPA). Das System ermöglicht Trainern die Echtzeit-Erfassung von Daten und bietet Mitgliedern transparente Einsicht in Statistiken.
 
-* **Mitgliederverwaltung:** Hinzufügen, Bearbeiten und Löschen von Vereinsmitgliedern.
-* **Digitale Anwesenheitsliste:** Erfassung von Trainingsbeteiligungen mit Kalender-Funktion.
-* **Rollenbasiertes System:**
-  * 🛡️ *Admin:* Vollzugriff, User-Management, Systemeinstellungen.
-  * 👟 *Trainer:* Kann Anwesenheiten pflegen und Mitglieder sehen.
-  * 👤 *Besucher:* Nur Lesezugriff (eingeschränkt).
-* **Cloud Backup System:** * Automatische nächtliche Backups auf **Google Drive**.
-  * Manuelle Backup-Option im Admin-Panel.
-  * Wiederherstellungsfunktion (Import) direkt im Browser.
-* **Progressive Web App (PWA):** Installierbar auf Smartphones für App-ähnliches Feeling.
-* **Sicherheit:** Vollständige HTTPS-Verschlüsselung und sicherer OAuth2-Flow für Backups.
+## 👥 Rollenkonzept (RBAC)
 
-## 🛠️ Technologie-Stack
+Das System verfügt über ein striktes Rechtemanagement mit drei definierten Ebenen:
 
-### Frontend
-* **Framework:** .NET 8 / Blazor WebAssembly (C#)
-* **UI/UX:** Bootstrap 5 mit Glassmorphism-Design
-* **Icons:** Bootstrap Icons
+* 👑 **Administrator**
+    * **Rechte:** Vollzugriff (Read/Write/Delete) auf alle Module.
+    * **Aufgaben:** Benutzerverwaltung, Pflege der Mitgliederstammdaten, Systemkonfiguration, Manuelle Backups.
+* 👟 **Trainer**
+    * **Rechte:** Schreibzugriff auf Anwesenheitslisten, Lesezugriff auf Mitgliederdaten.
+    * **Aufgaben:** Führen der Trainingsbeteiligung, Einsehen von Notfallkontakten.
+* 👤 **Mitglied**
+    * **Rechte:** Lesezugriff (Read-only).
+    * **Aufgaben:** Login zum Einsehen persönlicher Statistiken und Trainingsquoten.
 
-### Backend & Infrastruktur
-* **Serverless Compute:** Cloudflare Workers (JavaScript)
-* **Datenbank:** Cloudflare KV (Key-Value Store) für High-Speed Edge Access.
-* **Storage API:** Google Drive API v3 (via OAuth 2.0)
+## ✨ Funktionsumfang
 
-## 🚀 Installation & Setup (Lokal)
+### Core Features
+* **Digitale Anwesenheitsliste:** Kalenderbasierte Erfassung mit One-Click-Interface für Mobilgeräte.
+* **Mitglieder-Management:** Performante Verwaltung der Stammdaten.
+* **Statistik-Dashboard:** Auswertung der Trainingsbeteiligung für Mitglieder und Trainer.
+* **Offline-Fähigkeit:** Als PWA lokal auf Smartphones installierbar.
 
-Voraussetzungen: .NET 8 SDK, Node.js (optional für Worker Tests).
+### Security & Reliability
+* **Automatisches Cloud-Backup:** Ein serverloser Cron-Job (Trigger) sichert die gesamte Datenbank jede Nacht automatisch und verschlüsselt auf ein externes **Google Drive**.
+* **OAuth 2.0 Integration:** Die Verbindung zum Backup-Speicher erfolgt über sichere Access-Tokens.
+* **End-to-End Encryption:** Die gesamte Kommunikation erfolgt via HTTPS/TLS 1.3.
 
-1. **Repository klonen**
-   ```bash
-   git clone [https://github.com/DEIN-USER/svhofkirchen-app.git](https://github.com/DEIN-USER/svhofkirchen-app.git)
-   cd svhofkirchen-app
+## 🛠️ Tech Stack
+
+| Bereich | Technologie | Beschreibung |
+| :--- | :--- | :--- |
+| **Frontend** | **.NET 8 / Blazor WASM** | C# im Browser, kompiliert zu WebAssembly für native Performance. |
+| **UI Framework** | **Bootstrap 5** | Responsive Design mit Custom Glassmorphism-Look. |
+| **Backend** | **Cloudflare Workers** | Serverless JavaScript (V8 Engine) für minimale Latenz (Edge Computing). |
+| **Datenbank** | **Cloudflare KV** | Key-Value Store für weltweiten High-Speed Datenzugriff. |
+| **Backup API** | **Google Drive API v3** | REST-Schnittstelle zur externen Datensicherung. |
+
+## 🚀 Deployment & Setup
+
+Das Projekt ist für eine Serverless-Infrastruktur optimiert.
+
+1.  **Frontend:** Wird als statisches Asset-Bundle (HTML/CSS/WASM) gehostet (z.B. Cloudflare Pages).
+2.  **Backend:** Der Worker fungiert als API Gateway zwischen Frontend, KV-Store und Google API.
+3.  **Secrets Management:** API-Schlüssel und OAuth-Tokens werden ausschließlich als verschlüsselte Environment-Variables injiziert.
+
+---
+*© SV Hofkirchen – IT Department*
