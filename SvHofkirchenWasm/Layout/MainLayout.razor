@@ -29,24 +29,6 @@
                         <span class="text-muted small mx-2">|</span>
                         <a href="datenschutz"
                             class="text-decoration-none text-muted small hover-primary">Datenschutz</a>
-
-                        @if (AuthService.IsAuthenticated)
-                        {
-                            <span class="text-muted small mx-2">|</span>
-                            <span class="text-muted small me-2">
-                                <strong>@AuthService.CurrentUser?.UserName</strong>
-                            </span>
-                            <span class="text-muted small mx-2">|</span>
-                            <button class="btn btn-link text-muted text-decoration-none small p-0" @onclick="HandleLogout"
-                                style="height: auto; line-height: normal;">
-                                Abmelden
-                            </button>
-                        }
-                        else
-                        {
-                            <span class="text-muted small mx-2">|</span>
-                            <a href="login" class="text-decoration-none text-muted small hover-primary">Anmelden</a>
-                        }
                     </div>
                 </div>
             </div>

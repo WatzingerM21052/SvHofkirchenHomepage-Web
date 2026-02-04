@@ -1,4 +1,8 @@
-﻿<div class="d-flex flex-column h-100">
+﻿@using SvHofkirchenWasm.Services
+@inject AuthService AuthService
+@inject NavigationManager Navigation
+
+<div class="d-flex flex-column h-100">
     <div class="p-4 text-center border-bottom border-secondary">
         <a href="" class="d-block text-decoration-none nav-logo">
             <img src="Pictures/SVHofkirchenLogoWhite.svg" alt="SV Hofkirchen" class="img-fluid mb-2"
@@ -22,9 +26,8 @@
     </style>
     </div>
 
-    <nav class="flex-grow-1 p-3">
+    <nav class="flex-grow-1 p-3 nav-scrollable">
         <div class="nav flex-column gap-2">
-            <!-- Dashboard (alle Rollen außer Besucher) -->
             @if (AuthService.IsAuthenticated && AuthService.CurrentRole != "Besucher")
             {
                 <div class="nav-item">
@@ -34,9 +37,7 @@
                 </div>
             }
 
-            <!-- Anwesenheit (Admin, Trainer) -->
-            @if (AuthService.IsAuthenticated && (AuthService.CurrentRole == "Admin" || AuthService.CurrentRole ==
-                        "Trainer"))
+            @if (AuthService.IsAuthenticated && (AuthService.CurrentRole == "Admin" || AuthService.CurrentRole == "Trainer"))
             {
                 <div class="nav-item">
                     <NavLink class="nav-link" href="attendance">
@@ -45,9 +46,7 @@
                 </div>
             }
 
-            <!-- Spieler & Daten (Admin, Trainer) -->
-            @if (AuthService.IsAuthenticated && (AuthService.CurrentRole == "Admin" || AuthService.CurrentRole ==
-                        "Trainer"))
+            @if (AuthService.IsAuthenticated && (AuthService.CurrentRole == "Admin" || AuthService.CurrentRole == "Trainer"))
             {
                 <div class="nav-item">
                     <NavLink class="nav-link" href="youth-list">
@@ -56,7 +55,6 @@
                 </div>
             }
 
-            <!-- Statistik (alle Rollen außer Besucher) -->
             @if (AuthService.IsAuthenticated && AuthService.CurrentRole != "Besucher")
             {
                 <div class="nav-item">
@@ -66,7 +64,6 @@
                 </div>
             }
 
-            <!-- Besucher Seite (nur Besucher) -->
             @if (AuthService.IsAuthenticated && AuthService.CurrentRole == "Besucher")
             {
                 <div class="nav-item">
@@ -80,8 +77,7 @@
 
     <div class="p-3 border-top border-secondary mt-auto">
         <div class="nav flex-column">
-            <!-- Settings (alle außer Besucher) -->
-            @if (AuthService.IsAuthenticated && AuthService.CurrentRole == "Admin")
+            @if (AuthService.IsAuthenticated && AuthService.CurrentRole != "Besucher")
             {
                 <div class="nav-item">
                     <NavLink class="nav-link" href="settings">
@@ -90,7 +86,6 @@
                 </div>
             }
 
-            <!-- Benutzerverwaltung (nur Admin) -->
             @if (AuthService.IsAuthenticated && AuthService.CurrentRole == "Admin")
             {
                 <div class="nav-item">
@@ -99,6 +94,21 @@
                     </NavLink>
                 </div>
             }
+            
+            <div class="nav-item mt-2">
+                 @if (AuthService.IsAuthenticated)
+                 {
+                     <button class="nav-link w-100 text-start text-danger" @onclick="Logout">
+                        <i class="bi bi-box-arrow-right me-2"></i> Abmelden
+                     </button>
+                 }
+                 else 
+                 {
+                     <NavLink class="nav-link text-warning" href="login">
+                        <i class="bi bi-box-arrow-in-right me-2"></i> Anmelden
+                     </NavLink>
+                 }
+            </div>
         </div>
         <div class="text-center mt-3 text-white-50 small">
             &copy; @DateTime.Now.Year SV Hofkirchen
@@ -106,12 +116,21 @@
     </div>
 </div>
 
-@using SvHofkirchenWasm.Services
-@inject AuthService AuthService
-
 @code {
     protected override void OnInitialized()
     {
         AuthService.OnAuthStateChanged += StateHasChanged;
+    }
+
+    public void Dispose()
+    {
+        AuthService.OnAuthStateChanged -= StateHasChanged;
+    }
+    
+    private async Task Logout()
+    {
+        await AuthService.LogoutAsync();
+        // Erzwingt einen kompletten Reload der Seite -> Daten werden aus dem Speicher gelöscht
+        Navigation.NavigateTo("/", forceLoad: true);
     }
 }
