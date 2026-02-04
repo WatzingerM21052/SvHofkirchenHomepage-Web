@@ -1,5 +1,5 @@
 self.assetsManifest = {
-  "version": "aKQnYjxw",
+  "version": "OkH/ZIDS",
   "assets": [
     {
       "hash": "sha256-47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=",
@@ -262,12 +262,12 @@ self.assetsManifest = {
       "url": "_framework/Microsoft.Win32.Registry.i9dc47z9na.wasm"
     },
     {
-      "hash": "sha256-nal5+KErQ9DMu5x05Egzws6A7VihGilQz5hQK6gFG50=",
-      "url": "_framework/SvHofkirchenWasm.3o47fplaop.pdb"
+      "hash": "sha256-9NpKGS+ILEeXRo03oUj3G0IVWeRAVeGd34JnejKSJGc=",
+      "url": "_framework/SvHofkirchenWasm.k2rg0mioi6.pdb"
     },
     {
-      "hash": "sha256-tFPNOJ+0zV+Ijl8On/I4AwGBIUUYoH/8PWtmQbQ2Qks=",
-      "url": "_framework/SvHofkirchenWasm.s0fhu6592m.wasm"
+      "hash": "sha256-tTWcIkYGP4uVvQs/xXqBkJMzwDhhSlrS6SPxpwiTgus=",
+      "url": "_framework/SvHofkirchenWasm.z6p38o89sc.wasm"
     },
     {
       "hash": "sha256-i8txTGTPt84yEPhnifMAXYtYpzp2kdhPD7vDT8bQpEg=",
@@ -934,7 +934,7 @@ self.assetsManifest = {
       "url": "_framework/blazor.webassembly.js"
     },
     {
-      "hash": "sha256-nDt/jmZPrxFRcvWp9t552mo8fa9KmlzDNltwAWs6gzw=",
+      "hash": "sha256-ntHiYjo+0AptirCeMlQdzlQ0BcpU39mLMvgJWyzMzt4=",
       "url": "_framework/dotnet.js"
     },
     {
@@ -994,7 +994,7 @@ self.assetsManifest = {
       "url": "icon-512.png"
     },
     {
-      "hash": "sha256-mHCW3XEDshlplM8UcrlLMYZ+VHRUu29GxR7eihLj2ow=",
+      "hash": "sha256-3X69IVXweGeXDDT2K8x1dBRHP2M9uZHohmz65ME5diE=",
       "url": "index.html"
     },
     {
