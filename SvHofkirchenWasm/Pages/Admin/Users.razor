@@ -3,6 +3,7 @@
 @using SvHofkirchenWasm.Models
 @inject AuthService AuthService
 @inject NavigationManager Navigation
+@inject IJSRuntime JSRuntime
 
 @if (AuthService.CurrentRole != "Admin")
 {
@@ -26,7 +27,13 @@
         </div>
     </div>
 
-    @if (UserList.Count == 0)
+    @if (isLoading)
+    {
+        <div class="d-flex justify-content-center p-4">
+            <div class="spinner-border text-primary" role="status"></div>
+        </div>
+    }
+    else if (UserList.Count == 0)
     {
         <div class="alert alert-info" role="alert">
             Noch keine Benutzer erstellt.
@@ -72,9 +79,14 @@
                                 <button class="btn btn-sm btn-warning" @onclick="@(() => EditUser(user))">
                                     <i class="bi bi-pencil"></i>
                                 </button>
-                                <button class="btn btn-sm btn-danger" @onclick="@(() => DeleteUser(user.UserId))">
-                                    <i class="bi bi-trash"></i>
-                                </button>
+                                
+                                @* Selbstschutz: Sich selbst kann man nicht löschen *@
+                                @if (user.UserId != AuthService.CurrentUser?.UserId)
+                                {
+                                    <button class="btn btn-sm btn-danger" @onclick="@(() => DeleteUser(user.UserId))">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                }
                             </td>
                         </tr>
                     }
@@ -84,7 +96,6 @@
     }
 </div>
 
-<!-- Modal für Benutzer erstellen/bearbeiten -->
 @if (ShowModal)
 {
     <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
@@ -95,13 +106,13 @@
                     <button type="button" class="btn-close" @onclick="CloseModal"></button>
                 </div>
                 <div class="modal-body">
-                    <form>
+                    <form @onsubmit:preventDefault>
                         <div class="mb-3">
                             <label for="userName" class="form-label">Benutzername</label>
-                            <input type="text" class="form-control" id="userName" @bind="EditingUser!.UserName" />
+                            <input type="text" class="form-control" id="userName" @bind="EditingUser!.UserName" placeholder="Name (Case Sensitive)" />
                         </div>
                         <div class="mb-3">
-                            <label for="email" class="form-label">Email</label>
+                            <label for="email" class="form-label">Email <span class="text-muted fw-normal">(optional)</span></label>
                             <input type="email" class="form-control" id="email" @bind="EditingUser!.Email" />
                         </div>
                         <div class="mb-3">
@@ -110,7 +121,6 @@
                                 <option value="Admin">Admin</option>
                                 <option value="Trainer">Trainer</option>
                                 <option value="Mitglied">Mitglied</option>
-                                <option value="Besucher">Besucher</option>
                             </select>
                         </div>
                         <div class="mb-3 form-check">
@@ -123,6 +133,7 @@
                                 Ein inaktiver Benutzer kann sich nicht anmelden. Verwenden Sie dies, um Benutzer temporär zu sperren.
                             </div>
                         </div>
+
                         @if (EditingUser.UserId == 0)
                         {
                             @if (string.IsNullOrEmpty(CurrentPassword))
@@ -224,44 +235,37 @@
 @code {
     private List<User> UserList = new();
     private bool ShowModal = false;
+    private bool isLoading = true;
+    
     private User EditingUser = new();
-    private Dictionary<int, string> UserPasswords = new(); // Passwort pro Benutzer-ID
     private string? CurrentPassword = null; // Aktuelles Passwort für den bearbeiteten Benutzer
     private string? ManualPassword = null;
     private bool ShowManualPassword = false;
+    private bool IsNewlyCreated = false;
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        LoadUsers();
+        await LoadUsers();
     }
 
-    private void LoadUsers()
+    private async Task LoadUsers()
     {
-        // TODO: Von API laden
-        UserList = new List<User>
-{
-new User
-{
-UserId = 1,
-UserName = "admin",
-Email = "schachverein.hofkirchen@gmx.at",
-Role = "Admin",
-IsActive = true,
-CreatedAt = DateTime.Now.AddDays(-30),
-LastLogin = DateTime.Now
-}
-};
-        
-        // Initiales Passwort für Admin-Benutzer setzen (wird in Produktion aus DB geladen)
-        UserPasswords[1] = "admin";
+        isLoading = true;
+        UserList = await AuthService.GetUsersAsync();
+        isLoading = false;
     }
 
     private void ShowCreateUserModal()
     {
-        EditingUser = new User { UserId = 0, CreatedAt = DateTime.Now };
+        EditingUser = new User { UserId = 0, CreatedAt = DateTime.Now, Role = "User", IsActive = true };
         CurrentPassword = null;
         ManualPassword = null;
         ShowManualPassword = false;
+        IsNewlyCreated = false;
+        
+        // Generiere direkt eins, damit es da ist, wenn gespeichert wird
+        GenerateNewPasswordForUser();
+        
         ShowModal = true;
     }
 
@@ -275,62 +279,67 @@ LastLogin = DateTime.Now
             Role = user.Role,
             IsActive = user.IsActive,
             CreatedAt = user.CreatedAt,
-            LastLogin = user.LastLogin
+            LastLogin = user.LastLogin,
+            Password = user.Password // Vorhandenes Passwort mitnehmen!
         };
         
-        // Passwort aus Dictionary laden wenn vorhanden
-        CurrentPassword = UserPasswords.ContainsKey(user.UserId) ? UserPasswords[user.UserId] : null;
+        // Das Passwort aus dem Model laden (dank Worker Update jetzt verfügbar)
+        CurrentPassword = user.Password; 
+        
         ManualPassword = null;
         ShowManualPassword = false;
+        IsNewlyCreated = false;
         ShowModal = true;
     }
 
-    private void SaveUser()
+    private async Task SaveUser()
     {
+        // 1. Manuelles Passwort hat Vorrang (falls was drin steht)
+        if (ShowManualPassword && !string.IsNullOrWhiteSpace(ManualPassword))
+        {
+            EditingUser.Password = ManualPassword;
+        }
+        // 2. Sonst das generierte/angezeigte nehmen
+        else if (!string.IsNullOrEmpty(CurrentPassword))
+        {
+            EditingUser.Password = CurrentPassword;
+        }
+        
+        // Validierung
+        if (string.IsNullOrWhiteSpace(EditingUser.UserName)) return;
+        if (string.IsNullOrWhiteSpace(EditingUser.Password)) return; // Passwort Pflicht
+
         if (EditingUser.UserId == 0)
         {
-            // Neuer Benutzer - Passwort generieren
-            var newPassword = GeneratePassword();
-            EditingUser.UserId = UserList.Max(u => u.UserId) + 1;
-            
-            // Passwort für diesen Benutzer speichern
-            UserPasswords[EditingUser.UserId] = newPassword;
-            CurrentPassword = newPassword;
-            
-            UserList.Add(EditingUser);
-            // TODO: API-Call zum Speichern mit Passwort
-            // Hinweis: In Produktion würde das Passwort gehasht gespeichert
+            IsNewlyCreated = true;
+            await AuthService.AddUserAsync(EditingUser);
         }
         else
         {
-            // Benutzer aktualisieren
-            var existingUser = UserList.First(u => u.UserId == EditingUser.UserId);
-            existingUser.UserName = EditingUser.UserName;
-            existingUser.Email = EditingUser.Email;
-            existingUser.Role = EditingUser.Role;
-            existingUser.IsActive = EditingUser.IsActive;
-            
-            // Passwort wurde geändert?
-            if (!string.IsNullOrEmpty(CurrentPassword) && UserPasswords.ContainsKey(EditingUser.UserId))
-            {
-                UserPasswords[EditingUser.UserId] = CurrentPassword;
-            }
-            
-            CloseModal();
-            // TODO: API-Call zum Speichern
+            await AuthService.UpdateUserAsync(EditingUser);
+            CloseModal(); // Bei Update direkt schließen
+        }
+        
+        // Bei neuem User lassen wir das Modal offen, damit man das Passwort kopieren kann,
+        // aber wir laden die Liste im Hintergrund neu
+        if (IsNewlyCreated == false) 
+        {
+             await LoadUsers();
+        }
+        else 
+        {
+            // Wenn neu erstellt, Liste laden aber Modal offen lassen
+             UserList = await AuthService.GetUsersAsync();
         }
     }
 
-    private void DeleteUser(int userId)
+    private async Task DeleteUser(int userId)
     {
-        if (userId == 1)
-        {
-            // Admin-User nicht löschen
-            return;
-        }
+        // Selbstschutz ja, aber andere Admins dürfen gelöscht werden
+        if (userId == AuthService.CurrentUser?.UserId) return;
 
-        UserList.RemoveAll(u => u.UserId == userId);
-        // TODO: API-Call zum Löschen
+        await AuthService.DeleteUserAsync(userId);
+        await LoadUsers();
     }
 
     private void CloseModal()
@@ -339,7 +348,7 @@ LastLogin = DateTime.Now
         EditingUser = new();
         ManualPassword = null;
         ShowManualPassword = false;
-        // CurrentPassword NICHT zurücksetzen - bleibt für später erhalten
+        IsNewlyCreated = false;
     }
 
     private string GetRoleBadgeStyle(string role) => role switch
@@ -353,7 +362,6 @@ LastLogin = DateTime.Now
 
     private string GeneratePassword()
     {
-        // Generiert ein sicheres 12-stelliges Passwort
         const string chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789";
         const string special = "!@#$%&*";
         var random = new Random();
@@ -391,8 +399,9 @@ LastLogin = DateTime.Now
 
     private async Task CopyToClipboard(string text)
     {
-        // In einer echten Blazor WASM App würde hier JS Interop verwendet
-        // Für die Demo-Anzeige reicht die readonly Textbox
-        await Task.CompletedTask;
+        if (!string.IsNullOrEmpty(text))
+        {
+            await JSRuntime.InvokeVoidAsync("navigator.clipboard.writeText", text);
+        }
     }
 }

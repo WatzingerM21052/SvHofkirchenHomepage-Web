@@ -9,6 +9,11 @@ public class AuthService
     private readonly HttpClient _http;
     private User? _currentUser;
     private bool _isAuthenticated = false;
+    private List<User> _users = new();
+    private bool _usersLoaded = false;
+
+    // Optionen für Case-Insensitive JSON (wichtig für die Kommunikation mit Worker)
+    private readonly JsonSerializerOptions _options = new() { PropertyNameCaseInsensitive = true };
 
     public event Action? OnAuthStateChanged;
 
@@ -17,26 +22,16 @@ public class AuthService
         _http = http;
     }
 
-    public async Task InitializeAsync()
-    {
-        // Hier könnte man später prüfen, ob der User noch eingeloggt ist.
-        // Für den Moment starten wir immer ausgeloggt.
-        await Task.CompletedTask;
-    }
+    public async Task InitializeAsync() => await Task.CompletedTask;
 
     public async Task<AuthResponse> LoginAsync(string userName, string password)
     {
         try
         {
-            var loginData = new { Username = userName, Password = password };
-            
-            // Echter API Call an Cloudflare
-            var response = await _http.PostAsJsonAsync("api/auth/login", loginData);
-
+            var response = await _http.PostAsJsonAsync("api/auth/login", new { Username = userName, Password = password });
             if (response.IsSuccessStatusCode)
             {
-                var result = await response.Content.ReadFromJsonAsync<AuthResponse>();
-                
+                var result = await response.Content.ReadFromJsonAsync<AuthResponse>(_options);
                 if (result != null && result.Success)
                 {
                     _currentUser = result.User;
@@ -45,14 +40,9 @@ public class AuthService
                     return result;
                 }
             }
-
-            return new AuthResponse { Success = false, Message = "Benutzername oder Passwort falsch." };
+            return new AuthResponse { Success = false, Message = "Login fehlgeschlagen" };
         }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Login Fehler: {ex.Message}");
-            return new AuthResponse { Success = false, Message = "Server nicht erreichbar." };
-        }
+        catch (Exception) { return new AuthResponse { Success = false, Message = "Verbindungsfehler" }; }
     }
 
     public async Task LogoutAsync()
@@ -63,9 +53,73 @@ public class AuthService
         await Task.CompletedTask;
     }
 
+    // --- USER MANAGEMENT ---
+
+    public async Task<List<User>> GetUsersAsync()
+    {
+        try 
+        {
+            var result = await _http.GetFromJsonAsync<List<User>>("api/users", _options);
+            if (result != null) 
+            {
+                _users = result;
+                _usersLoaded = true;
+            }
+        }
+        catch (Exception ex) { Console.WriteLine("Ladefehler: " + ex.Message); }
+        return _users;
+    }
+
+    public async Task AddUserAsync(User user)
+    {
+        // Erst laden, falls noch nicht geschehen
+        if (!_usersLoaded) await GetUsersAsync();
+
+        if (_users.Any(u => u.UserName.Equals(user.UserName, StringComparison.OrdinalIgnoreCase))) return;
+
+        user.UserId = _users.Any() ? _users.Max(u => u.UserId) + 1 : 1;
+        _users.Add(user);
+        await SaveUsersToApiAsync();
+    }
+
+    public async Task UpdateUserAsync(User updatedUser)
+    {
+        if (!_usersLoaded) await GetUsersAsync();
+
+        var index = _users.FindIndex(u => u.UserId == updatedUser.UserId);
+        if (index != -1)
+        {
+            // SICHERHEIT: Wenn im UI das Passwortfeld leer war, behalten wir das alte Passwort!
+            if (string.IsNullOrEmpty(updatedUser.Password))
+            {
+                updatedUser.Password = _users[index].Password;
+            }
+            // Andernfalls wird das neue Passwort übernommen
+
+            _users[index] = updatedUser;
+            await SaveUsersToApiAsync();
+        }
+    }
+
+    public async Task DeleteUserAsync(int userId)
+    {
+        if (!_usersLoaded) await GetUsersAsync();
+        var user = _users.FirstOrDefault(u => u.UserId == userId);
+        if (user != null)
+        {
+            _users.Remove(user);
+            await SaveUsersToApiAsync();
+        }
+    }
+
+    private async Task SaveUsersToApiAsync()
+    {
+        try { await _http.PostAsJsonAsync("api/users", _users); }
+        catch (Exception ex) { Console.WriteLine("Speicherfehler: " + ex.Message); }
+    }
+
     public bool IsAuthenticated => _isAuthenticated;
     public User? CurrentUser => _currentUser;
     public string? CurrentRole => _currentUser?.Role;
-
     private void NotifyAuthStateChanged() => OnAuthStateChanged?.Invoke();
 }

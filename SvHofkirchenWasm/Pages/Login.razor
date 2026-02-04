@@ -1,99 +1,108 @@
 @page "/login"
+@layout Layout.MainLayout
 @using SvHofkirchenWasm.Services
 @inject AuthService AuthService
 @inject NavigationManager Navigation
 
 <div class="container mt-5">
     <div class="row justify-content-center">
-        <div class="col-md-6">
-            <div class="card shadow-lg">
-                <div class="card-header bg-primary text-white text-center">
-                    <h3 class="mb-0">SV Hofkirchen - Login</h3>
+        <div class="col-md-6 col-lg-4">
+            <div class="card shadow-lg border-0 rounded-3">
+                <div class="card-header bg-primary text-white text-center py-3">
+                    <h4 class="mb-0 fw-bold">Anmeldung</h4>
                 </div>
                 <div class="card-body p-4">
-                    @if (!string.IsNullOrEmpty(ErrorMessage))
+                    @if (!string.IsNullOrEmpty(errorMessage))
                     {
-                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                            @ErrorMessage
-                            <button type="button" class="btn-close" @onclick="@(() => ErrorMessage = "")"></button>
+                        <div class="alert alert-danger text-center animate-shake" role="alert">
+                            <i class="bi bi-exclamation-circle-fill me-2"></i>@errorMessage
                         </div>
                     }
 
-                    <form @onsubmit="HandleLogin">
-                        <div class="mb-3">
-                            <label for="userName" class="form-label">Benutzername</label>
-                            <input type="text" class="form-control" id="userName" placeholder="Benutzername eingeben"
-                                @bind="UserName" disabled="@IsLoading" autocomplete="username" />
+                    <div class="mb-3">
+                        <label class="form-label text-muted small fw-bold text-uppercase">Benutzername</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light"><i class="bi bi-person"></i></span>
+                            <input type="text" class="form-control" @bind="username" placeholder="Benutzername" @onkeyup="HandleEnter" />
                         </div>
-
-                        <div class="mb-3">
-                            <label for="password" class="form-label">Passwort</label>
-                            <input type="password" class="form-control" id="password" placeholder="Passwort eingeben"
-                                @bind="Password" disabled="@IsLoading" autocomplete="current-password" />
-                        </div>
-
-                        <button type="submit" class="btn btn-primary w-100" disabled="@IsLoading">
-                            @if (IsLoading)
-                            {
-                                <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                                <span>Wird angemeldet...</span>
-                            }
-                            else
-                            {
-                                <span>Anmelden</span>
-                            }
-                        </button>
-                    </form>
-
-                    <hr class="my-4" />
-
-                    <div class="alert alert-info small">
-                        <strong>Demo-Anmeldedaten:</strong><br />
-                        <strong>Benutzer:</strong> admin<br />
-                        <strong>Passwort:</strong> admin
                     </div>
+
+                    <div class="mb-4">
+                        <label class="form-label text-muted small fw-bold text-uppercase">Passwort</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light"><i class="bi bi-lock"></i></span>
+                            <input type="password" class="form-control" @bind="password" placeholder="Passwort" @onkeyup="HandleEnter" />
+                        </div>
+                    </div>
+
+                    <button class="btn btn-primary w-100 py-2 fw-bold shadow-sm" @onclick="ExecuteLogin" disabled="@isLoading">
+                        @if (isLoading)
+                        {
+                            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                            <span>Anmelden...</span>
+                        }
+                        else
+                        {
+                            <span><i class="bi bi-box-arrow-in-right me-2"></i>Anmelden</span>
+                        }
+                    </button>
+                </div>
+                <div class="card-footer bg-light text-center py-3">
+                    <small class="text-muted">SV Hofkirchen &copy; @DateTime.Now.Year</small>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-@code {
-    private string UserName = string.Empty;
-    private string Password = string.Empty;
-    private string ErrorMessage = string.Empty;
-    private bool IsLoading = false;
+<style>
+    .animate-shake { animation: shake 0.5s; }
+    @@keyframes shake {
+        0% { transform: translateX(0); }
+        25% { transform: translateX(-5px); }
+        50% { transform: translateX(5px); }
+        75% { transform: translateX(-5px); }
+        100% { transform: translateX(0); }
+    }
+</style>
 
-    protected override async Task OnInitializedAsync()
+@code {
+    private string username = "";
+    private string password = "";
+    private string errorMessage = "";
+    private bool isLoading = false;
+
+    private async Task ExecuteLogin()
     {
-        await AuthService.InitializeAsync();
+        if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
+        {
+            errorMessage = "Bitte Benutzername und Passwort eingeben.";
+            return;
+        }
+
+        isLoading = true;
+        errorMessage = "";
+        
+        // Echter API Call
+        var result = await AuthService.LoginAsync(username, password);
+        
+        isLoading = false;
+
+        if (result.Success)
+        {
+            Navigation.NavigateTo("/");
+        }
+        else
+        {
+            errorMessage = result.Message ?? "Login fehlgeschlagen.";
+        }
     }
 
-    private async Task HandleLogin()
+    private async Task HandleEnter(KeyboardEventArgs e)
     {
-        ErrorMessage = string.Empty;
-        IsLoading = true;
-
-        try
+        if (e.Key == "Enter")
         {
-            var result = await AuthService.LoginAsync(UserName, Password);
-
-            if (result.Success)
-            {
-                Navigation.NavigateTo("");
-            }
-            else
-            {
-                ErrorMessage = result.Message;
-            }
-        }
-        catch (Exception ex)
-        {
-            ErrorMessage = $"Ein Fehler ist aufgetreten: {ex.Message}";
-        }
-        finally
-        {
-            IsLoading = false;
+            await ExecuteLogin();
         }
     }
 }
