@@ -98,9 +98,9 @@
             <div class="nav-item mt-2">
                  @if (AuthService.IsAuthenticated)
                  {
-                     <button class="nav-link w-100 text-start text-danger" @onclick="Logout">
+                     <NavLink class="nav-link text-warning" href="Logout">
                         <i class="bi bi-box-arrow-right me-2"></i> Abmelden
-                     </button>
+                     </NavLink>
                  }
                  else 
                  {
