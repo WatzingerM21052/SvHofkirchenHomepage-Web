@@ -81,7 +81,7 @@
     <div class="p-3 border-top border-secondary mt-auto">
         <div class="nav flex-column">
             <!-- Settings (alle außer Besucher) -->
-            @if (AuthService.IsAuthenticated && AuthService.CurrentRole != "Besucher")
+            @if (AuthService.IsAuthenticated && AuthService.CurrentRole == "Admin")
             {
                 <div class="nav-item">
                     <NavLink class="nav-link" href="settings">

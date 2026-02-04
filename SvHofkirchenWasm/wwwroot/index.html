@@ -7,49 +7,29 @@
     <title>SV Hofkirchen - Jugend</title>
     
     <script>
-        (function() {
-            // Hilfsfunktion die nichts tut
-            const noop = () => {};
-            
-            // Simulierter Speicher
-            const storageShim = {
-                getItem: () => null, 
-                setItem: noop, 
-                removeItem: noop, 
-                clear: noop, 
-                key: () => null, 
-                length: 0
-            };
-            
-            try {
-                // LocalStorage und SessionStorage entschärfen
-                Object.defineProperty(window, 'localStorage', { value: storageShim, writable: false });
-                Object.defineProperty(window, 'sessionStorage', { value: storageShim, writable: false });
-            } catch (e) { }
+        // Wenn wir auf GitHub Pages sind (nicht localhost), setzen wir den Pfad
+        var path = window.location.pathname;
+        var base = "/";
+        if (window.location.hostname.includes("github.io")) {
+            // Projektname aus der URL extrahieren (z.B. /SvHofkirchenHomepage-Web/)
+            base = "/SvHofkirchenHomepage-Web/";
+        }
+        document.write('<base href="' + base + '" />');
+    </script>
 
-            // WICHTIG: Auch den Cache-Speicher entschärfen (für Blazor Start)
-            if (!window.caches) {
-                window.caches = { 
-                    match: () => Promise.resolve(undefined), 
-                    open: () => Promise.resolve({ 
-                        add: noop, 
-                        put: noop, 
-                        match: () => Promise.resolve(undefined),
-                        delete: () => Promise.resolve(true),
-                        keys: () => Promise.resolve([])
-                    }),
-                    has: () => Promise.resolve(false),
-                    delete: () => Promise.resolve(true),
-                    keys: () => Promise.resolve([])
-                };
+    <script src="js/storage-helper.js"></script> 
+    <script>
+        // Falls storage-helper.js nicht geladen wurde (Fallback)
+        (function() {
+            try {
+                var x = window.localStorage;
+            } catch (e) {
+                var noop = function() {};
+                var storage = { getItem: function() { return null; }, setItem: noop, removeItem: noop, clear: noop, key: noop, length: 0 };
+                Object.defineProperty(window, 'localStorage', { value: storage, writable: false });
+                Object.defineProperty(window, 'sessionStorage', { value: storage, writable: false });
             }
         })();
-    </script>
-    
-    <script>
-        // Auf Localhost ist es "/", auf GitHub Pages "/SvHofkirchenHomepage-Web/"
-        var base = window.location.hostname.includes('localhost') ? '/' : '/SvHofkirchenHomepage-Web/';
-        document.write('<base href="' + base + '" />');
     </script>
 
     <link rel="stylesheet" href="lib/bootstrap/dist/css/bootstrap.min.css" />
@@ -70,7 +50,7 @@
     </div>
 
     <div id="blazor-error-ui">
-        Ein Fehler ist aufgetreten. Bitte Seite neu laden.
+        Ein Fehler ist aufgetreten.
         <a href="" class="reload">Neu laden</a>
         <a class="dismiss">🗙</a>
     </div>
@@ -83,28 +63,7 @@
     <script src="https://npmcdn.com/flatpickr/dist/l10n/de.js"></script>
 
     <script>
-        window.addEventListener('error', function(e) {
-            if (e.message && (
-                e.message.includes('Access to storage') || 
-                e.message.includes('quota') || 
-                e.message.includes('Database')
-            )) {
-                e.stopImmediatePropagation();
-                e.preventDefault();
-                console.warn("Storage warning suppressed:", e.message);
-                return true;
-            }
-        });
-        
-        window.addEventListener('unhandledrejection', function(e) {
-            const msg = e.reason ? e.reason.toString() : '';
-            if (msg.includes('storage') || msg.includes('quota') || msg.includes('503')) {
-                e.preventDefault();
-            }
-        });
-    </script>
-
-    <script>
+        // JS Helper Funktionen
         window.setupChart = (id, config) => {
             const ctx = document.getElementById(id)?.getContext('2d');
             if (ctx) {
@@ -121,37 +80,17 @@
             link.click();
             document.body.removeChild(link);
         };
-
-        window.generatePdf = (title, headers, data) => {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-            doc.text(title, 14, 20);
-            doc.autoTable({ startY: 30, head: [headers], body: data });
-            doc.save(title + '.pdf');
-        };
-
-        window.initDatePicker = (elementId, initialDate, dotNetHelper) => {
-            const el = document.getElementById(elementId);
-            if(el) {
-                flatpickr(el, {
-                    locale: "de", defaultDate: initialDate, dateFormat: "Y-m-d", altInput: true, altFormat: "D, j. F Y", disableMobile: "true",
-                    onChange: (selectedDates, dateStr) => dotNetHelper.invokeMethodAsync('OnDateSelected', dateStr)
-                });
+        
+        // Verhindert Fehler, wenn Browser-Storage blockiert ist
+        window.addEventListener('error', function(e) {
+            if (e.message && (e.message.includes('Access to storage') || e.message.includes('quota'))) {
+                e.stopImmediatePropagation();
+                e.preventDefault();
+                console.warn("Storage error suppressed");
             }
-        };
-    </script>
-
-    <script src="_framework/blazor.webassembly.js" autostart="false"></script>
-    <script>
-        // Manueller Start mit Fehlerbehandlung
-        Blazor.start({
-            loadBootResource: function (type, name, defaultUri, integrity) {
-                // Cache-Busting für alle Dateien erzwingen, um 503 Fehler zu minimieren
-                return defaultUri + "?v=" + new Date().getTime();
-            }
-        }).catch(err => {
-            console.warn("Blazor Startfehler (ignoriert):", err);
         });
     </script>
+    
+    <script src="_framework/blazor.webassembly.js"></script>
 </body>
 </html>

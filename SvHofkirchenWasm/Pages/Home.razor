@@ -8,7 +8,6 @@
 
 @if (!AuthService.IsAuthenticated)
 {
-    <!-- PUBLIC GUEST VIEW - Unangemeldete Besucher -->
     @RenderGuestView()
     return;
 }
@@ -25,18 +24,21 @@
 else
 {
     <div class="container-fluid p-4">
-        <div
-            class="glass-card p-5 mb-4 position-relative overflow-hidden bg-primary bg-gradient text-white border-0 shadow-lg">
+        <div class="glass-card p-5 mb-4 position-relative overflow-hidden bg-primary bg-gradient text-white border-0 shadow-lg">
             <div class="position-relative" style="z-index: 2;">
-                <span class="badge bg-white text-primary mb-2 shadow-sm fw-bold">Saison 2025/26</span>
-                <h1 class="display-5 fw-bold mb-2">Sektion Schach Jugend</h1>
+                <span class="badge bg-white text-primary mb-2 shadow-sm fw-bold">Saison @(DateTime.Now.Month > 8 ? DateTime.Now.Year : DateTime.Now.Year-1)/@(DateTime.Now.Month > 8 ? DateTime.Now.Year+1 : DateTime.Now.Year)</span>
+                <h1 class="display-5 fw-bold mb-2">Hallo, @AuthService.CurrentUser?.UserName!</h1>
                 <p class="lead opacity-75 mb-4" style="max-width: 600px;">
-                    Willkommen im Trainer-Dashboard. Hier ist der aktuelle Status.
+                    Willkommen im Bereich für @AuthService.CurrentRole. Hier ist der aktuelle Status.
                 </p>
+                
                 <div class="d-flex gap-3 flex-wrap">
-                    <a href="attendance" class="btn btn-warning fw-bold px-4 rounded-pill shadow-sm text-dark">
-                        <i class="bi bi-calendar-check-fill me-2"></i>Anwesenheit
-                    </a>
+                    @if (AuthService.CurrentRole == "Admin" || AuthService.CurrentRole == "Trainer")
+                    {
+                        <a href="attendance" class="btn btn-warning fw-bold px-4 rounded-pill shadow-sm text-dark">
+                            <i class="bi bi-calendar-check-fill me-2"></i>Anwesenheit
+                        </a>
+                    }
                     <a href="statistics" class="btn btn-outline-light px-4 rounded-pill fw-bold backdrop-blur">
                         <i class="bi bi-graph-up me-2"></i>Statistik
                     </a>
@@ -102,7 +104,6 @@ else
                     </div>
                     <div class="mt-3">
                         @{
-                            // FIX: Prozentrechnung relativ zur Gesamtanzahl
                             double avg = CalculateAverageAttendance();
                             double total = Service.YouthMembers.Count > 0 ? Service.YouthMembers.Count : 1;
                             double percentage = Math.Min(100, (avg / total) * 100);
@@ -172,19 +173,23 @@ else
                             <i class="bi bi-person-badge fs-4 me-3 text-primary"></i>
                             <div>
                                 <div class="fw-bold">Spielerliste</div>
-                                <small class="text-muted">Daten bearbeiten</small>
+                                <small class="text-muted">Daten ansehen @(AuthService.CurrentRole == "Admin" ? "& bearbeiten" : "")</small>
                             </div>
                             <i class="bi bi-chevron-right ms-auto text-muted"></i>
                         </a>
-                        <a href="settings"
-                            class="list-group-item list-group-item-action p-3 border-bottom-0 d-flex align-items-center">
-                            <i class="bi bi-gear-fill fs-4 me-3 text-secondary"></i>
-                            <div>
-                                <div class="fw-bold">Einstellungen</div>
-                                <small class="text-muted">App konfigurieren</small>
-                            </div>
-                            <i class="bi bi-chevron-right ms-auto text-muted"></i>
-                        </a>
+                        
+                        @if (AuthService.CurrentRole == "Admin" || AuthService.CurrentRole == "Trainer")
+                        {
+                            <a href="settings"
+                                class="list-group-item list-group-item-action p-3 border-bottom-0 d-flex align-items-center">
+                                <i class="bi bi-gear-fill fs-4 me-3 text-secondary"></i>
+                                <div>
+                                    <div class="fw-bold">Einstellungen</div>
+                                    <small class="text-muted">App konfigurieren</small>
+                                </div>
+                                <i class="bi bi-chevron-right ms-auto text-muted"></i>
+                            </a>
+                        }
                     </div>
                 </div>
             </div>
@@ -193,6 +198,13 @@ else
 }
 
 <style>
+    .glass-card {
+        background: rgba(255, 255, 255, 0.95);
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        border-radius: 12px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+    }
+    
     .icon-circle {
         width: 60px;
         height: 60px;
@@ -217,7 +229,11 @@ else
     protected override async Task OnInitializedAsync()
     {
         Service.OnChange += StateHasChanged;
-        await Service.InitializeAsync();
+        // WICHTIG: Daten laden, falls noch nicht geschehen
+        if (AuthService.IsAuthenticated)
+        {
+             await Service.InitializeAsync();
+        }
     }
 
     public void Dispose() => Service.OnChange -= StateHasChanged;
@@ -261,7 +277,7 @@ else
         <div class="container-fluid p-4">
             <div class="glass-card p-5 mb-4 position-relative overflow-hidden bg-primary bg-gradient text-white border-0 shadow-lg">
                 <div class="position-relative" style="z-index: 2;">
-                    <span class="badge bg-white text-primary mb-2 shadow-sm fw-bold">Saison 2025/26</span>
+                    <span class="badge bg-white text-primary mb-2 shadow-sm fw-bold">Saison @(DateTime.Now.Month > 8 ? DateTime.Now.Year : DateTime.Now.Year-1)/@(DateTime.Now.Month > 8 ? DateTime.Now.Year+1 : DateTime.Now.Year)</span>
                     <h1 class="display-5 fw-bold mb-2">SV Hofkirchen</h1>
                     <h2 class="h3 fw-bold mb-3 opacity-90">Sektion Schach - Jugend</h2>
                     <p class="lead opacity-75 mb-4" style="max-width: 600px;">
@@ -277,7 +293,6 @@ else
                     style="font-size: 20rem; opacity: 0.08; right: -4rem; bottom: -5rem; transform: rotate(-15deg);"></i>
             </div>
 
-            <!-- Trainingszeiten -->
             <div class="row g-4 mb-4">
                 <div class="col-md-6">
                     <div class="glass-card p-4 h-100">
@@ -320,7 +335,6 @@ else
                 </div>
             </div>
 
-            <!-- Nächstes Training -->
             <div class="row g-4 mb-4">
                 <div class="col-12">
                     <div class="glass-card p-4 border-left border-5 border-warning">
@@ -338,7 +352,6 @@ else
                 </div>
             </div>
 
-            <!-- Info Cards -->
             <div class="row g-4">
                 <div class="col-md-4">
                     <div class="glass-card p-4 text-center h-100">
